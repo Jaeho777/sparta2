@@ -1,0 +1,17 @@
+# Output files
+output/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Temp files
+*.backup
+_test_*.py
+
+# CatBoost cache
+catboost_info/
