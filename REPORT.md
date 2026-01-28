@@ -202,7 +202,6 @@ SHAP 분석은 **Train 데이터에서만 수행**하여 미래 정보 누수를
    → Naive 모델과 비교
 ```
  
-![Model Comparison](output/model_comparison.png)
  
 ### 6.2 Baseline 모델 결과 (Test 기간)
 
@@ -373,9 +372,9 @@ Naive 예측값과 BASE_GradientBoosting 예측값을 가중 평균으로 결합
  
 | 가중치 조합 | RMSE | 기존 대비 |
 |-------------|------|-----------|
-| Naive*0.7 + GB*0.3 | 430.17 | -10.5% |
-| Naive*0.9 + GB*0.1 | 422.44 | -12.1% |
-| **Naive*0.8 + GB*0.2** | **403.89** | **-16.0%** |
+| Naive*0.7 + GB*0.3 | 434.74 | -9.6% |
+| Naive*0.9 + GB*0.1 | 423.67 | -11.9% |
+| **Naive*0.8 + GB*0.2** | **406.80** | **-15.4%** |
 
 **발견**: **Naive에 소량의 GradientBoosting(20%)을 결합**하면 순수 Naive보다 더 좋은 성능을 보인다. Naive의 추세 추종력에 ML의 패턴 인식을 약간 더하는 것이 최적이었다.
  
@@ -395,8 +394,8 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
  
 | 순위 | 모델 | RMSE | RMSPE (%) | MAPE (%) | MAE | Adj_R2 | 비고 |
 |------|------|------|-----------|----------|-----|--------|------|
-| 1 | **Hybrid(N0.8+GB0.2)** | **403.89** | **2.63** | **2.06** | **317.11** | N/A | **최고 성능** |
-| 2 | Hybrid(N0.9+GB0.1) | 422.44 | 2.74 | 2.06 | 318.35 | N/A | |
+| 1 | **Hybrid(N0.8+GB0.2)** | **406.80** | **2.65** | **2.06** | **318.00** | N/A | **최고 성능** |
+| 2 | Hybrid(N0.9+GB0.1) | 423.67 | 2.75 | 2.07 | 319.50 | N/A | |
 | 3 | Naive_Drift_Damped(0.7) | 438.60 | 2.82 | 2.10 | 326.50 | N/A | Naive 변형 1위 |
 | 4 | Naive + GB(Residual) | 461.55 | NA | NA | NA | N/A | 스태킹 성공 |
 | 5 | Naive_Drift (기존) | 480.67 | 3.07 | 2.10 | 325.76 | N/A | 기준점 |
@@ -405,7 +404,7 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
 **핵심 인사이트**:
 1. **ROR(3단계)은 실패**: 복잡한 구조보다는 단순한 보정이 낫다 (최고 ROR RMSE > 1000)
 2. **Hybrid가 스태킹보다 강함**: Naive의 추세 추종력과 GradientBoosting의 패턴 인식을 가중 평균하는 것이 가장 효과적
-3. **Naive가 메인, GradientBoosting은 보조**: GB 비중 20%일 때가 최적 (RMSE 403.89)
+3. **Naive가 메인, GradientBoosting은 보조**: GB 비중 20%일 때가 최적 (RMSE 406.80)
  
 ---
  
@@ -431,7 +430,7 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
  
 | 우선순위 | 모델 | RMSE | 특징 |
 |----------|------|------|------|
-| 1순위 | Hybrid(Naive*0.8 + GB*0.2) | 403.89 | 최고 성능 |
+| 1순위 | Hybrid(Naive*0.8 + GB*0.2) | 406.80 | 최고 성능 |
 | 2순위 | Naive_Drift_Damped(α=0.7) | 438.60 | 단순하고 해석 용이 |
 | 3순위 | Naive_Drift | 480.67 | 가장 단순, 유지보수 불필요 |
  
@@ -454,3 +453,77 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
 2. 중국 스테인리스강 생산량 데이터 확보 시 포함
 3. 뉴스/텍스트 기반 센티먼트 피처 추가
 4. Walk-forward 방식의 rolling 백테스트 수행
+
+---
+
+## 부록 A. 프로젝트 파일 구조
+
+```
+sparta2/
+├── sparta2.ipynb            # 메인 분석 노트북 (전체 실험 파이프라인)
+├── EDA.ipynb                # 탐색적 데이터 분석
+├── dl_lstm_transformer.ipynb # 딥러닝 모델 실험 (LSTM/Transformer)
+├── REPORT.md                # 최종 보고서 (본 문서)
+│
+├── data_weekly_260120.csv       # 원본 데이터 (666주, 주간)
+├── data_engineered_features.csv # 피처 엔지니어링 후 데이터
+├── data_selected_features.csv   # SHAP 선택 피처만 포함
+├── feature_importance.csv       # 피처별 SHAP 중요도
+├── selected_features.txt        # 선택된 피처 목록
+│
+├── shap_summary.png         # SHAP 피처 중요도 시각화
+├── report_images/           # 보고서용 시각화 이미지
+│   ├── nickel_price_ts.png  # 니켈 가격 시계열
+│   ├── returns_dist.png     # 수익률 분포
+│   └── volatility_ts.png    # 변동성 추이
+│
+├── run_shap_selection.py    # SHAP 피처 선택 스크립트
+├── requirements.txt         # Python 의존성
+└── .gitignore               # Git 추적 제외 설정
+```
+
+---
+
+## 부록 B. 재현 방법
+
+### B.1 환경 설정
+
+```bash
+# Python 3.9+ 권장
+pip install -r requirements.txt
+```
+
+**주요 의존성**:
+- pandas, numpy: 데이터 처리
+- scikit-learn: 기본 ML 모델
+- xgboost, lightgbm, catboost: Gradient Boosting 앙상블
+- shap: 피처 중요도 분석
+- matplotlib, seaborn: 시각화
+
+### B.2 실행 순서
+
+1. **EDA.ipynb**: 데이터 탐색 및 기초 분석
+2. **sparta2.ipynb**: 전체 실험 파이프라인 (순차 실행)
+   - Section 1-3: 데이터 로드 및 전처리
+   - Section 4-6: 피처 엔지니어링 및 SHAP 선택
+   - Section 7-9: 베이스라인 모델 학습 및 평가
+   - Section 10: Residual/ROR 스태킹
+   - Section 11-12: 최종 결과 및 결론
+3. **dl_lstm_transformer.ipynb**: (선택) 딥러닝 모델 실험
+
+### B.3 데이터 설명
+
+| 파일 | 설명 | 행/열 |
+|------|------|-------|
+| data_weekly_260120.csv | LME 금속, 글로벌 지수, 환율, 채권 주간 데이터 | 666행 × ~120열 |
+| data_selected_features.csv | SHAP 분석으로 선택된 주요 피처 | 666행 × ~40열 |
+
+**타겟 변수**: `Com_LME_Ni_Cash` (LME 니켈 현물가격, USD/톤)
+
+---
+
+## 부록 C. 주요 참고문헌
+
+1. Lundberg, S. M., & Lee, S. I. (2017). A unified approach to interpreting model predictions. *NeurIPS*.
+2. Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. *KDD*.
+3. Ke, G., et al. (2017). LightGBM: A highly efficient gradient boosting decision tree. *NeurIPS*.
