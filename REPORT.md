@@ -15,6 +15,7 @@
 | **베이스라인 모델** | GradientBoosting, XGBoost, LightGBM, CatBoost, AdaBoost (5종) |
 | **Naive 모델** | Naive_Last (전주 동일), Naive_Drift (추세 지속), Damped (추세 감쇠) |
 | **고급 모델링** | Residual Stacking (2단계), ROR Stacking (3단계), **Hybrid Ensemble (Naive+ML)** |
+| **딥러닝 모델** | LSTM, Transformer (별도 노트북 실험, 과적합 확인) |
 
 ### 1.2 통합 결과표 (최종)
 
@@ -28,10 +29,11 @@
 | 4 | Naive_Drift (기존) | 480.67 | 2.10 | Baseline 기준점 |
 | 5 | Naive + 0.3*ML_Residual | 556.94 | 2.51 | 스태킹 (보정 30%) |
 | 6 | Naive_Last | 569.23 | 2.58 | 단순 전주 가격 |
-| 7 | Naive + ML_Residual (100%) | 1010.50 | 5.87 | 스태킹 실패 (과적합) |
-| 8 | ROR_AdaBoost+GB+GB | 1134.19 | 5.21 | 3단계 실패 |
-| 9 | BASE_GradientBoosting | 1185.07 | 5.53 | ML 모델 중 1위 |
-| 10 | BASE_AdaBoost | 1401.87 | 8.70 | 최하위 |
+| 7 | **DL_Stacked (Trans+LSTM)** | **684.34** | **3.97** | **딥러닝 최고** |
+| 8 | Naive + ML_Residual (100%) | 1010.50 | 5.87 | 스태킹 실패 (과적합) |
+| 9 | ROR_AdaBoost+GB+GB | 1134.19 | 5.21 | 3단계 실패 |
+| 10 | BASE_GradientBoosting | 1185.07 | 5.53 | ML 모델 중 1위 |
+| 11 | BASE_AdaBoost | 1401.87 | 8.70 | 최하위 |
 
 ### 1.3 모델 비교 시각화 (Test 기간)
 
@@ -618,7 +620,7 @@ Test 기간(2025.10~2026.01)에 니켈 가격은 14,305 → 17,816으로 **약 2
  
 Naive_Drift가 ML 모델을 압도적으로 이겼기 때문에, 이 발견을 기반으로 추가 실험을 수행했다.
  
-### 9.1 실험 1: Naive 변형 테스트
+### 10.1 실험 1: Naive 변형 테스트
  
 | 모델 | RMSE | 기존 대비 |
 |------|------|-----------|
@@ -629,7 +631,7 @@ Naive_Drift가 ML 모델을 압도적으로 이겼기 때문에, 이 발견을 �
  
 **발견**: 단순 이동평균(SMA)은 오히려 악화되지만, **Drift에 감쇠(damping)를 적용하면 개선**된다. α=0.7 (추세의 70%만 반영)이 최적이다.
  
-### 9.2 실험 2: Naive + GradientBoosting 하이브리드
+### 10.2 실험 2: Naive + GradientBoosting 하이브리드
  
 Naive 예측값과 BASE_GradientBoosting 예측값을 가중 평균으로 결합했다.
  
@@ -644,7 +646,7 @@ Naive 예측값과 BASE_GradientBoosting 예측값을 가중 평균으로 결합
 > [!NOTE]
 > **가중치 튜닝**: 0.8:0.2 비율은 Validation 기간(2025.08~10)에서 grid search로 결정되었으며, Test 기간에서 별도 최적화 없이 그대로 적용했다. 따라서 Test leakage 문제는 없다.
  
-### 9.3 실험 3: Naive + GradientBoosting Residual 스태킹
+### 10.3 실험 3: Naive + GradientBoosting Residual 스태킹
  
 Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
  
@@ -657,7 +659,7 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
  
 **발견**: Naive 기반 스태킹은 오히려 성능을 악화시킨다. ML의 잔차 보정이 Naive의 추세 추종력을 해친다.
  
-### 9.4 Test 기간 모델별 예측 비교
+### 10.4 Test 기간 모델별 예측 비교
 
 아래 시각화는 Test 기간 동안 각 모델의 예측값과 실제 가격을 비교한 것이다.
 
@@ -671,7 +673,7 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
 
 **핵심 인사이트**: 2025년 12월~2026년 1월 급등 구간에서 Hybrid 모델과 Naive_Drift가 실제 가격을 잘 추종하는 반면, ML 모델은 $15,000~16,000 수준에서 정체되어 있음을 확인할 수 있다.
 
-### 9.5 후속 실험 종합 결론
+### 10.5 후속 실험 종합 결론
 
 | 순위 | 모델 | RMSE | RMSPE (%) | MAPE (%) | MAE | Adj_R2 | 비고 |
 |------|------|------|-----------|----------|-----|--------|------|
@@ -689,9 +691,40 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
  
 ---
  
-## 10. 결론 및 권장사항
+## 10. 딥러닝 모델 실험 (LSTM & Transformer)
+
+별도의 노트북(`dl_lstm_transformer.ipynb`)을 통해 시계열 특화 딥러닝 모델을 실험했다.
+
+### 10.1 실험 개요
+- **모델**: LSTM (Long Short-Term Memory), Transformer (Self-Attention)
+- **접근법**: 단일 모델 및 Residual/ROR 스태킹 구조 적용 (`DL_Base + DL_Residual`)
+- **데이터**: 동일한 666주 데이터 사용
+
+### 10.2 실험 결과 (Test 기간)
+
+| 모델 | RMSE | MAPE (%) | 비고 |
+|------|------|----------|------|
+| **ROR_Trans+Trans+LSTM** | **684.34** | **3.97** | **DL 모델 중 최고** |
+| RES_Transformer+Transformer | 723.65 | 3.80 | |
+| BASE_Transformer | 955.19 | 5.04 | |
+| BASE_LSTM | 1957.66 | 11.61 | Validation 우수, Test 과적합 |
+
+### 10.3 시사점과 교훈
+
+1. **LSTM의 극단적 과적합**:
+   - LSTM은 Validation 기간(2025.08~10)에서 **RMSE 461.62**로 Hybrid 모델에 버금가는 매우 우수한 성능을 보였다.
+   - 그러나 Test 기간(2025.10~2026.01)에서는 **RMSE 1957.66**으로 모델 중 최악의 성능을 기록했다.
+   - 이는 LSTM이 과거의 패턴(Train/Val의 평균회귀)을 너무 완벽하게 학습한 나머지, Test 기간의 새로운 패턴(급등 추세)에 적응하지 못한 **과적합(Overfitting)**의 전형적인 사례다.
+
+2. **데이터 양의 한계**:
+   - 666주(약 13년)라는 데이터 양은 복잡한 파라미터를 가진 Transformer나 LSTM이 일반화된 패턴을 학습하기에 부족했다.
+   - 결과적으로 단순한 Naive 모델이나 가벼운 ML 모델(GradientBoosting)보다 성능이 저조했다.
+
+---
  
-### 10.1 가설 검증 결과
+## 11. 결론 및 권장사항
+ 
+### 11.1 가설 검증 결과
  
 | 가설 | 결과 | 근거 |
 |------|------|------|
@@ -699,7 +732,7 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
 | 중국 경기 영향 | 부분 확인 | 직접 지표(Shanghai50) 포함, 간접 지표(채권)도 중요 |
 | 앙상블 스태킹 우월 | **기각** | 스태킹이 오히려 성능 악화 |
  
-### 10.2 핵심 인사이트
+### 11.2 핵심 인사이트
  
 1. **"복잡한 모델이 반드시 좋은 것은 아니다"**: 시장 구조가 변화하는 상황에서 단순한 모델이 더 robust할 수 있다
  
@@ -707,7 +740,7 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
  
 3. **"Validation 과적합 주의"**: ML 모델이 Validation에서 좋은 성능을 보여도 Test에서 급격히 하락할 수 있다
  
-### 10.3 실무 권장사항
+### 11.3 실무 권장사항
  
 | 우선순위 | 모델 | RMSE | 특징 |
 |----------|------|------|------|
@@ -721,7 +754,7 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
  
 ---
  
-## 11. 연구 한계점 및 향후 과제
+## 12. 연구 한계점 및 향후 과제
  
 ### 한계점
 1. **데이터 기간**: 668주(약 13년)는 장기 사이클 분석에 다소 짧음
@@ -737,7 +770,7 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
 
 ---
 
-## 12. 프로젝트 파일 구조
+## 13. 프로젝트 파일 구조
 
 ```
 sparta2/
@@ -765,7 +798,7 @@ sparta2/
 
 ---
 
-## 13. 참고문헌
+## 14. 참고문헌
 
 1. Lundberg, S. M., & Lee, S. I. (2017). A unified approach to interpreting model predictions. *NeurIPS*.
 2. Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. *KDD*.
