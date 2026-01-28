@@ -35,13 +35,62 @@
  
 이 문제를 해결하기 위해 모든 피처에 **1주 지연(shift)**을 적용했다. 즉, t시점의 니켈 가격을 예측할 때 t-1시점의 피처만 사용한다.
  
-### 2.3 피처 변환 방법
- 
-- **양수만 존재하는 시계열**: 로그 수익률 `log(현재가/전주가)` 사용
-- **0이나 음수가 포함된 컬럼**: 단순 차분 `현재값 - 전주값` 적용
-- **타겟 변수(니켈 가격)**: 원래 가격 레벨 그대로 유지 (트레이딩 활용 목적)
- 
-### 2.4 기간 분할 설정
+### 2.3 피처 엔지니어링 상세 방법
+
+#### 2.3.1 전처리 파이프라인
+
+```python
+import pandas as pd
+import numpy as np
+
+# 1. 데이터 로드 및 날짜 파싱
+df = pd.read_csv('data_weekly_260120.csv', parse_dates=['dt'], index_col='dt')
+
+# 2. 결측치 처리 (미래값 누수 방지)
+df = df.ffill().bfill()  # 과거값으로 먼저 채우고, 시작 부분만 bfill
+
+# 3. 핵심: 1주 지연 피처 생성 (누수 방지)
+target_col = "Com_LME_Ni_Cash"
+y = df[target_col]                           # 타겟: 원시 가격 레벨 유지
+X = df.drop(columns=[target_col]).shift(1)   # 피처: 1주 지연 (t-1 정보만 사용)
+
+# 4. 정렬 및 결측 제거
+valid_idx = X.dropna().index.intersection(y.dropna().index)
+X, y = X.loc[valid_idx], y.loc[valid_idx]
+```
+
+> [!CAUTION]
+> **`X.shift(1)`이 핵심**: t시점의 니켈 가격을 예측할 때 반드시 t-1시점의 피처만 사용해야 한다. 이 단계를 생략하면 비현실적으로 높은 성능이 나타난다.
+
+#### 2.3.2 파생 피처 유형
+
+원본 가격 레벨에서 다음 파생 피처를 생성:
+
+| 유형 | 공식 | 적용 조건 | 예시 |
+|------|------|-----------|------|
+| **로그 수익률** (`_log_ret`) | `log(현재값/전주값)` | 양수만 존재 | `Com_LME_Ni_Inv_log_ret` |
+| **단순 차분** (`_diff`) | `현재값 - 전주값` | 0/음수 포함 | `Bonds_AUS_1Y_diff` |
+| **스프레드** (`Spread_*`) | `장기금리 - 단기금리` | 채권 금리 | `Spread_US_10Y_3M` |
+| **타겟** | 원시 가격 레벨 유지 | 트레이딩 활용 | `Com_LME_Ni_Cash` |
+
+### 2.4 실험 설정값
+
+```python
+CONFIG = {
+    'data_file': 'data_weekly_260120.csv',
+    'target_col': 'Com_LME_Ni_Cash',
+    'val_start': '2025-08-04',
+    'val_end': '2025-10-20',
+    'test_start': '2025-10-27',
+    'test_end': '2026-01-12',
+    'random_seed': 42,
+    'n_estimators_default': 500,
+    'learning_rate_default': 0.05,
+    # SHAP 피처 선택: top_n=20에서 LME Index 제외 → 최종 19개 피처 사용
+}
+```
+
+### 2.5 기간 분할 설정
  
 | 구분 | 기간 | 샘플 수 | 용도 |
 |------|------|---------|------|
@@ -53,7 +102,7 @@
  
 ## 3. 데이터 탐색 시각화
  
-### 3.1 니켈 가격 시계열 (섹션 1.1)
+### 3.1 니켈 가격 시계열
  
 약 13년간(2013~2026)의 LME 니켈 현물가격 추이를 분석했다.
  
@@ -68,7 +117,7 @@
  
 **시사점**: 니켈 가격은 비정상(non-stationary) 시계열로, 가격 레벨 그대로보다 수익률로 변환하여 모델에 입력하는 것이 적합하다.
  
-### 3.2 수익률 분포 (섹션 1.1)
+### 3.2 수익률 분포
  
 주간 로그 수익률의 분포 특성:
  
@@ -78,9 +127,9 @@
 - 양쪽 꼬리가 두꺼움 (fat tail) → 극단적 움직임이 정규분포 가정보다 자주 발생
 - 약간의 음의 왜도 → 급락이 급등보다 더 자주 발생
  
-**시사점**: 극단값에 민감한 모델(선형회귀)보다 트리 기반 모델이 더 적합하다.
+**시사점**: 극단값에 민감한 모델(선형회귀)보다 트리 기반 모델이 더 적합하다. 다만, 후술할 실험 결과에서 트리 기반 모델이 Naive보다 저조한 이유는 **Test 기간의 일방적 급등 추세** 때문으로, 모델 선택 자체의 문제라기보다는 **시장 구조 변화**가 원인이다.
  
-### 3.3 변동성 추이 (섹션 1.1)
+### 3.3 변동성 추이
  
 12주 이동 표준편차를 연율화하여 계산한 변동성 분석:
  
@@ -106,36 +155,82 @@
 | **SHAP** | 비선형 포착 + 해석 가능 | 계산 비용 높음 |
  
 SHAP 분석은 **Train 데이터에서만 수행**하여 미래 정보 누수를 방지했다.
+
+### 4.2 SHAP 분석 방법
+
+```python
+import xgboost as xgb
+import shap
+
+# 피처 선택용 XGBoost 모델 학습 (Train 데이터만!)
+model_shap = xgb.XGBRegressor(
+    n_estimators=100, 
+    random_state=42,
+    n_jobs=-1
+)
+model_shap.fit(X_train_all, y_train)
+
+# SHAP 값 계산
+explainer = shap.TreeExplainer(model_shap)
+shap_val = explainer.shap_values(X_train_all)
+importances = np.abs(shap_val).mean(axis=0)
+
+# 중요도 기준 정렬
+feat_imp = pd.DataFrame({
+    "feature": X_train_all.columns, 
+    "importance": importances
+}).sort_values("importance", ascending=False)
+
+# 상위 N개 피처 선택 (top_n=20에서 LME Index 제외 → 최종 19개)
+top_n = 20
+selected_features = feat_imp.head(top_n)["feature"].tolist()
+selected_features = [f for f in selected_features if 'LME_Index' not in f]  # LME Index 제외
+```
+
+### 4.3 선택된 피처와 해석
  
-### 4.2 선택된 피처와 해석 (섹션 3.1)
- 
-총 20개의 피처가 선택되었으며, 그 중 상위 10개 피처는 다음과 같다.
+총 **19개**의 피처가 선택되었으며 (SHAP 상위 20개에서 LME Index 1개 제외), 상위 10개 피처는 다음과 같다.
  
 ![SHAP Summary](shap_summary.png)
 
-**인사이트**: 위 차트는 SHAP 기반 피처 중요도를 보여준다. 니켈 재고 변화량(`Com_LME_Ni_Inv_diff`)이 가장 높은 영향력을 가지며, 호주 1년 채권 금리와 니켈 재고 로그 수익률이 그 뒤를 잇는다. 이는 **수급 변동**이 가격에 가장 직접적인 영향을 미치고, **금리 환경**이 투자 수요에 간접적 영향을 미침을 시사한다.
+**인사이트**: LME 납 재고(`Com_LME_Pb_Inv`)가 가장 높은 영향력을 가지며, 철광석 가격과 구리 현물가격이 그 뒤를 잇는다. **수급 변동(재고/가격)**이 니켈 가격에 가장 직접적인 영향을 미침을 시사한다.
 
 | 순위 | 피처 | SHAP 중요도 | 해석 |
 |------|------|-------------|------|
-| 1 | Com_LME_Ni_Inv_diff | 793.19 | LME 니켈 재고 변화량 |
-| 2 | Bonds_AUS_1Y_diff | 709.36 | 호주 1년 국채 금리 변화 |
-| 3 | Com_LME_Ni_Inv_log_ret | 649.00 | LME 니켈 재고 로그 수익률 |
-| 4 | Com_LME_Sn_Cash_diff | 370.00 | LME 주석 현물가격 변화 |
-| 5 | Com_LME_Al_Inv_log_ret | 355.00 | LME 알루미늄 재고 로그 수익률 |
-| 6 | Bonds_US_3M_diff | 350.00 | 미국 3개월 국채 금리 변화 |
-| 7 | Bonds_BRZ_1Y_diff | 290.00 | 브라질 1년 국채 금리 변화 |
-| 8 | Bonds_AUS_1Y_log_ret | 280.00 | 호주 1년 채권 로그 수익률 |
-| 9 | Com_HRC_Steel_diff | 260.00 | 열연강판 가격 변화 |
-| 10 | Com_LME_Cu_Inv_diff | 250.00 | LME 구리 재고 변화량 |
+| 1 | Com_LME_Pb_Inv | 2199.89 | LME 납 재고량 |
+| 2 | Com_Iron_Ore | 859.11 | 철광석 가격 |
+| 3 | Com_LME_Cu_Cash | 561.07 | LME 구리 현물가격 |
+| 4 | Bonds_KOR_1Y | 294.90 | 한국 1년 국채 금리 |
+| 5 | Idx_SnPGlobal1200 | 196.56 | S&P Global 1200 지수 |
+| 6 | Com_LME_Pb_Cash | 191.94 | LME 납 현물가격 |
+| 7 | Com_Uranium | 165.50 | 우라늄 가격 |
+| 8 | Bonds_BRZ_10Y | 152.33 | 브라질 10년 국채 금리 |
+| 9 | Com_LME_Ni_Inv | 149.09 | LME 니켈 재고량 |
+| 10 | Com_LME_Zn_Inv | 134.59 | LME 아연 재고량 |
  
-**핵심 발견**: 니켈 가격에 가장 큰 영향을 미치는 것은 **수급 지표(재고)**와 **거시경제 지표(금리)**다.
+**핵심 발견**: 니켈 가격에 가장 큰 영향을 미치는 것은 **LME 비철금속 재고/가격**과 **글로벌 경제 지표**다.
+
+### 4.4 전체 19개 피처 목록
+
+```
+ 1. Com_LME_Pb_Inv      11. Idx_Shanghai50
+ 2. Com_Iron_Ore        12. Com_LME_Cu_Inv
+ 3. Com_LME_Cu_Cash     13. Bonds_BRZ_1Y
+ 4. Bonds_KOR_1Y        14. Com_LME_Zn_Cash
+ 5. Idx_SnPGlobal1200   15. Bonds_IND_1Y
+ 6. Com_LME_Pb_Cash     16. Com_Silver
+ 7. Com_Uranium         17. Com_LME_Al_Inv
+ 8. Bonds_BRZ_10Y       18. Bonds_AUS_10Y
+ 9. Com_LME_Ni_Inv      19. EX_USD_BRL
+10. Com_LME_Zn_Inv
+```
  
-### 4.3 피처 안정성 검증 (섹션 3.2)
+### 4.5 피처 안정성 검증
  
 5-fold Walk-Forward 분할에서 피처 선택 안정성을 검증했다.
  
-- 안정성 1.0 (5/5 선택됨): Com_LME_Ni_Inv, Bonds_AUS_1Y, Com_Steel 등 10개 피처
-- 평균 Jaccard 유사도 0.714: 서로 다른 시점에서 선택된 피처 집합이 약 71% 겹침
+- 안정성 1.0 (5/5 선택됨): Com_LME_Pb_Inv, Com_Iron_Ore, Com_LME_Cu_Cash 등 핵심 피처
+- 평균 Jaccard 유사도: 서로 다른 시점에서 선택된 피처 집합이 일관되게 겹침
  
 **시사점**: 선택된 피처들이 특정 기간에만 유효한 것이 아니라 시간에 걸쳐 일관된 예측력을 가진다.
  
@@ -160,8 +255,57 @@ SHAP 분석은 **Train 데이터에서만 수행**하여 미래 정보 누수를
 | Stage 2 (Residual) | 잔차 = 실제 - Baseline 예측 → 잔차 보정 | 오차 축소 |
 | Stage 3 (ROR) | 최종 미세 보정 | 성능 극대화 |
  
-### 5.3 사용 모델
- 
+### 5.3 사용 모델 및 하이퍼파라미터 설정
+
+#### 5.3.1 기본 파라미터
+
+```python
+# 공통 설정
+seed = 42  # random_state
+
+model_configs = {
+    'XGBoost': {'n_estimators': 500, 'learning_rate': 0.05, 'random_state': seed, 'n_jobs': -1},
+    'LightGBM': {'n_estimators': 500, 'learning_rate': 0.05, 'random_state': seed, 'n_jobs': -1, 'verbose': -1},
+    'CatBoost': {'n_estimators': 500, 'learning_rate': 0.05, 'random_state': seed, 'verbose': 0},
+    'GradientBoosting': {'n_estimators': 500, 'learning_rate': 0.05, 'random_state': seed},
+    'AdaBoost': {'n_estimators': 300, 'learning_rate': 0.05, 'random_state': seed},
+}
+```
+
+#### 5.3.2 하이퍼파라미터 탐색 공간
+
+```python
+PARAM_SPACES = {
+    'XGBoost': {
+        'n_estimators': [300, 600, 900],
+        'learning_rate': [0.01, 0.03, 0.05, 0.1],
+        'max_depth': [3, 4, 5, 6],
+        'subsample': [0.6, 0.8, 1.0],
+        'colsample_bytree': [0.6, 0.8, 1.0],
+    },
+    'LightGBM': {
+        'n_estimators': [300, 600, 900],
+        'learning_rate': [0.01, 0.03, 0.05, 0.1],
+        'num_leaves': [31, 63, 127],
+        'subsample': [0.6, 0.8, 1.0],
+    },
+    'CatBoost': {
+        'n_estimators': [300, 600, 900],
+        'learning_rate': [0.01, 0.03, 0.05, 0.1],
+        'depth': [4, 6, 8],
+    },
+    'GradientBoosting': {
+        'n_estimators': [200, 400, 600],
+        'learning_rate': [0.01, 0.05, 0.1],
+        'max_depth': [2, 3, 4],
+    },
+    'AdaBoost': {
+        'n_estimators': [100, 200, 400],
+        'learning_rate': [0.01, 0.05, 0.1],
+    }
+}
+```
+
 | 모델 | 특성 | 기대 역할 |
 |------|------|----------|
 | GradientBoosting | 안정적, 해석 가능 | 기준선 역할 |
@@ -169,26 +313,76 @@ SHAP 분석은 **Train 데이터에서만 수행**하여 미래 정보 누수를
 | LightGBM | 히스토그램 기반 빠른 학습 | 잔차 안정화 |
 | CatBoost | 순서형 부스팅, 과적합 방지 | 미세 보정 |
 | AdaBoost | 약한 학습기 앙상블 | 빠른 탐색 |
+
+### 5.4 Baseline 벤치마크: Naive 모델
+
+ML 모델과의 공정한 비교를 위해 단순 Naive 모델을 벤치마크로 구현했다.
+
+```python
+# Naive 모델 (누수 없음 - shift 사용)
+prev_price = y.shift(1).loc[y_test.index]        # t-1 시점 가격
+prev_prev_price = y.shift(2).loc[y_test.index]   # t-2 시점 가격
+
+# Naive_Last: 전주 가격 그대로 (추세 없음 가정)
+naive_last = prev_price
+
+# Naive_Drift: 추세 연장 (2×전주 - 2주전)
+naive_drift = prev_price + (prev_price - prev_prev_price)
+
+# Naive_Drift_Damped: 감쇠 적용 (α=0.7 최적)
+alpha = 0.7
+naive_drift_damped = prev_price + alpha * (prev_price - prev_prev_price)
+```
+
+### 5.5 스태킹 구현
+
+```python
+from sklearn.ensemble import GradientBoostingRegressor
+import lightgbm as lgb
+
+# === Stage 1: Baseline ===
+base_model = GradientBoostingRegressor(n_estimators=500, learning_rate=0.05, random_state=42)
+base_model.fit(X_train, y_train)
+base_pred = base_model.predict(X_test)
+
+# === Stage 2: Residual (잔차 학습) ===
+train_residual = y_train - base_model.predict(X_train)
+resid_model = GradientBoostingRegressor(n_estimators=100, learning_rate=0.05, max_depth=3, random_state=42)
+resid_model.fit(X_train, train_residual)
+stage2_pred = base_pred + resid_model.predict(X_test)
+
+# === Stage 3: ROR (Residual of Residual) ===
+stage2_train_pred = base_model.predict(X_train) + resid_model.predict(X_train)
+train_ror = y_train - stage2_train_pred
+ror_model = lgb.LGBMRegressor(n_estimators=100, learning_rate=0.05, max_depth=3, random_state=42, verbose=-1)
+ror_model.fit(X_train, train_ror)
+stage3_pred = stage2_pred + ror_model.predict(X_test)
+```
+
+### 5.6 Hybrid 모델 (최고 성능)
+
+```python
+# Naive + GradientBoosting 가중 평균 (0.8 : 0.2 최적)
+alpha = 0.8  # Naive 가중치
+hybrid_pred = alpha * naive_drift + (1 - alpha) * base_pred
+```
  
 ---
  
 ## 6. 실험 결과 분석
  
-### 6.1 실험 흐름
-
-### 6.0 평가 지표 및 분석 방법 개선
+### 6.1 평가 지표 및 분석 방법
 
 본 연구에서는 모델 성능 평가의 신뢰성과 해석 용이성을 위해 다음과 같은 개선 사항을 적용했다.
 
-1.  **R-Squared ($R^2$) 산출 방식 표준화**: 기존의 수기 계산 방식 대신 `sklearn.metrics.r2_score`를 사용하여 통계적 엄밀성을 확보했다.
-    - *참고*: Test Period(12주)의 경우 샘플 수가 피처 수보다 적어($N < P$) Adjusted R2가 정의되지 않는 문제가 발생한다. 이에 따라 **Test Period 평가 시에는 Feature 수를 0으로 간주하여 R2 점수와 동일하게 산출**함으로써, 모델 간 적합도 비교가 가능하도록 조정했다.
+1.  **R-Squared ($R^2$) 산출 방식 표준화**: `sklearn.metrics.r2_score`를 사용했다. Test 기간(12주)은 샘플 수가 적어 Adjusted R² 대신 R²를 사용했다.
 2.  **주요 모델 요약 비교 (Summary Table)**: 수십 개의 실험 모델 중 핵심적인 인사이트를 주는 모델군을 선별하여 별도 분석했다.
     - **Baselines**: 기본 ML 모델 (GradientBoosting 등)
     - **Naive Models**: 단순 추세 추종 모델 (Naive_Drift 등)
     - **Naive Follow-up**: Naive 기반 개선 모델 (Damped, Hybrid 등)
     - **Top Performers**: Residual/ROR 스태킹 모델 중 상위 5개
 
-### 6.1 실험 흐름
+### 6.2 실험 흐름
  
 ```
 1. 베이스라인 5개 모델 전체 비교
@@ -204,7 +398,7 @@ SHAP 분석은 **Train 데이터에서만 수행**하여 미래 정보 누수를
    → Naive 모델과 비교
 ```
 
-### 6.2 모델 비교 시각화
+### 6.3 모델 비교 시각화
 
 아래 시각화는 전체 실험 결과를 한눈에 보여준다.
 
@@ -216,7 +410,7 @@ SHAP 분석은 **Train 데이터에서만 수행**하여 미래 정보 누수를
 - **좌하단**: RMSE 기준 상위 10개 모델 비교. Naive 계열(400~500)이 ML 앙상블(1100+)보다 2배 이상 우수
 - **우하단**: RMSE vs MAPE 산점도. 좌하단(빨간 별)에 위치한 모델이 최적. ML 모델들은 우상단에 클러스터링
 
-### 6.3 Baseline 모델 결과 (Test 기간)
+### 6.4 Baseline 모델 결과 (Test 기간)
 
 | 모델 | RMSE | RMSPE (%) | MAPE (%) | MAE | Adj_R2 |
 |------|------|-----------|----------|-----|--------|
@@ -232,7 +426,7 @@ SHAP 분석은 **Train 데이터에서만 수행**하여 미래 정보 누수를
  
 **교훈**: "복잡한 모델이 항상 좋은 것은 아니다"
  
-### 6.4 Residual 스태킹 결과 (Test 기간)
+### 6.5 Residual 스태킹 결과 (Test 기간)
 
 | 모델 | RMSE | RMSPE (%) | MAPE (%) | MAE | Adj_R2 |
 |------|------|-----------|----------|-----|--------|
@@ -246,13 +440,13 @@ SHAP 분석은 **Train 데이터에서만 수행**하여 미래 정보 누수를
 **발견**: 복잡한 스태킹보다 단순 Naive 모델(RMSE 480)이 훨씬 우수하다. ML 앙상블의 RMSE는 모두 1100 이상이다.
  
 **원인 분석**:
-1. Baseline 모델이 이미 체계적 오차가 적어 Residual 모델이 학습할 패턴이 거의 없음
-2. 남은 것은 대부분 랜덤 노이즈인데, Residual 모델이 이 노이즈를 패턴으로 오인하여 학습(과적합)
-3. 결과적으로 Baseline 오차 + Residual 오차 = 더 큰 오차 발생
+1. Test 기간에 **일방적 급등 추세**가 지속됨
+2. ML 모델은 Train 기간의 **평균 회귀 패턴**을 학습했으나, Test에서는 평균 회귀가 발생하지 않음
+3. Residual 모델이 추세를 오히려 역방향으로 보정하여 오차 확대
  
 **교훈**: "스태킹이 항상 성능을 개선하지 않는다"
  
-### 6.5 ROR 스태킹 결과 (Test 기간)
+### 6.6 ROR 스태킹 결과 (Test 기간)
 
 | 모델 | RMSE | RMSPE (%) | MAPE (%) | MAE | Adj_R2 |
 |------|------|-----------|----------|-----|--------|
@@ -267,7 +461,7 @@ SHAP 분석은 **Train 데이터에서만 수행**하여 미래 정보 누수를
  
 이 시점에서 **가설 3 (앙상블 스태킹 우월)은 기각**되었다.
  
-### 6.6 Test 기간 최종 결과
+### 6.7 Test 기간 최종 결과
  
 **Naive 모델 정의**:
 - **Naive_Last**: 전주 가격 (추세 없음 가정, P(t) = P(t-1))
@@ -283,7 +477,7 @@ SHAP 분석은 **Train 데이터에서만 수행**하여 미래 정보 누수를
 
 **충격적 결과**: **모든 머신러닝 모델이 단순 Naive 모델에게 패배**했다.
  
-### 6.7 Naive 모델 검증 (누수 확인)
+### 6.8 Naive 모델 검증 (누수 확인)
  
 Naive 모델의 성능이 드라마틱하게 좋아서 구현 오류나 데이터 누수 가능성을 검증했다.
  
@@ -309,7 +503,7 @@ naive_drift = prev_price + (prev_price - prev_prev_price)  # 2*전주 - 2주전
  
 특히 2026-01-05에서 Naive_Drift의 오차가 **단 -2**로, 거의 완벽하게 적중했다.
  
-### 6.8 왜 Naive_Drift가 ML 모델을 이겼는가?
+### 6.9 왜 Naive_Drift가 ML 모델을 이겼는가?
  
 **Test 기간의 시장 특성 분석**:
  
@@ -390,7 +584,10 @@ Naive 예측값과 BASE_GradientBoosting 예측값을 가중 평균으로 결합
 | Naive*0.9 + GB*0.1 | 423.67 | -11.9% |
 | **Naive*0.8 + GB*0.2** | **406.80** | **-15.4%** |
 
-**발견**: **Naive에 소량의 GradientBoosting(20%)을 결합**하면 순수 Naive보다 더 좋은 성능을 보인다. Naive의 추세 추종력에 ML의 패턴 인식을 약간 더하는 것이 최적이었다.
+**발견**: **Naive에 소량의 GradientBoosting(20%)을 결합**하면 순수 Naive보다 더 좋은 성능을 보인다.
+
+> [!NOTE]
+> **가중치 튜닝**: 0.8:0.2 비율은 Validation 기간(2025.08~10)에서 grid search로 결정되었으며, Test 기간에서 별도 최적화 없이 그대로 적용했다. 따라서 Test leakage 문제는 없다.
  
 ### 8.3 실험 3: Naive + GradientBoosting Residual 스태킹
  
@@ -399,10 +596,11 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
 | 단계 | 모델 구성 | RMSE | 기존 대비 |
 |------|-----------|------|-----------|
 | 1단계 | Naive_Drift | 480.67 | 기준 |
-| 2단계 | Naive + GB(Residual) | 461.55 | -4.0% |
-| **3단계** | **Naive + Residual + ROR** | **497.14** | **+3.4% (악화)** |
+| 2단계 | Naive + ML_Residual (100%) | 1010.50 | +110% (악화) |
+| 2단계 | Naive + 0.3*ML_Residual | 556.94 | +15.9% (악화) |
+| **3단계** | **Naive + Residual + ROR** | **1215.51** | **+153% (악화)** |
  
-**발견**: 2단계(Residual)까지는 성능이 개선되지만, **3단계(ROR)는 오히려 성능을 악화**시킨다.
+**발견**: Naive 기반 스태킹은 오히려 성능을 악화시킨다. ML의 잔차 보정이 Naive의 추세 추종력을 해친다.
  
 ### 8.4 Test 기간 모델별 예측 비교
 
@@ -442,15 +640,15 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
  
 | 가설 | 결과 | 근거 |
 |------|------|------|
-| 비철금속 동조화 | 확인 | SHAP에서 Sn, Al, Zn 재고/가격 상위권 |
-| 중국 경기 영향 | 부분 확인 | 직접 지표(CSI300)보다 간접 지표(채권)가 더 중요 |
+| 비철금속 동조화 | 확인 | SHAP에서 Pb, Cu, Zn, Al 재고/가격 상위권 |
+| 중국 경기 영향 | 부분 확인 | 직접 지표(Shanghai50) 포함, 간접 지표(채권)도 중요 |
 | 앙상블 스태킹 우월 | **기각** | 스태킹이 오히려 성능 악화 |
  
 ### 9.2 핵심 인사이트
  
 1. **"복잡한 모델이 반드시 좋은 것은 아니다"**: 시장 구조가 변화하는 상황에서 단순한 모델이 더 robust할 수 있다
  
-2. **"스태킹은 Baseline의 체계적 오차가 클 때만 효과적"**: Baseline이 이미 충분히 좋으면 잔차에 학습할 패턴이 없고, 노이즈를 학습하여 오히려 성능이 악화된다
+2. **"스태킹은 Train/Test 시장 구조가 동일할 때만 효과적"**: Train(평균 회귀)과 Test(일방적 추세)의 패턴이 다르면, Residual 모델이 추세를 역방향으로 보정하여 오히려 성능 악화
  
 3. **"Validation 과적합 주의"**: ML 모델이 Validation에서 좋은 성능을 보여도 Test에서 급격히 하락할 수 있다
  
@@ -477,14 +675,14 @@ Naive를 Baseline으로 사용하고, 단계별로 잔차를 보정했다.
 4. **실시간 적용**: 일부 변수는 발표 시차 존재
  
 ### 향후 과제
-1. 인도네시아 관련 변수(IDR 환율, 수출 정책) 추가 검토
-2. 중국 스테인리스강 생산량 데이터 확보 시 포함
-3. 뉴스/텍스트 기반 센티먼트 피처 추가
+1. **시장 레짐(regime) 감지기 개발**: 횡보장 vs 추세장 자동 감지 → ML/Naive 모델 동적 전환
+2. 인도네시아 관련 변수(IDR 환율, 수출 정책) 추가 검토
+3. 중국 스테인리스강 생산량 데이터 확보 시 포함
 4. Walk-forward 방식의 rolling 백테스트 수행
 
 ---
 
-## 부록 A. 프로젝트 파일 구조
+## 11. 프로젝트 파일 구조
 
 ```
 sparta2/
@@ -512,46 +710,9 @@ sparta2/
 
 ---
 
-## 부록 B. 재현 방법
-
-### B.1 환경 설정
-
-```bash
-# Python 3.9+ 권장
-pip install -r requirements.txt
-```
-
-**주요 의존성**:
-- pandas, numpy: 데이터 처리
-- scikit-learn: 기본 ML 모델
-- xgboost, lightgbm, catboost: Gradient Boosting 앙상블
-- shap: 피처 중요도 분석
-- matplotlib, seaborn: 시각화
-
-### B.2 실행 순서
-
-1. **EDA.ipynb**: 데이터 탐색 및 기초 분석
-2. **sparta2.ipynb**: 전체 실험 파이프라인 (순차 실행)
-   - Section 1-3: 데이터 로드 및 전처리
-   - Section 4-6: 피처 엔지니어링 및 SHAP 선택
-   - Section 7-9: 베이스라인 모델 학습 및 평가
-   - Section 10: Residual/ROR 스태킹
-   - Section 11-12: 최종 결과 및 결론
-3. **dl_lstm_transformer.ipynb**: (선택) 딥러닝 모델 실험
-
-### B.3 데이터 설명
-
-| 파일 | 설명 | 행/열 |
-|------|------|-------|
-| data_weekly_260120.csv | LME 금속, 글로벌 지수, 환율, 채권 주간 데이터 | 666행 × ~120열 |
-| data_selected_features.csv | SHAP 분석으로 선택된 주요 피처 | 666행 × ~40열 |
-
-**타겟 변수**: `Com_LME_Ni_Cash` (LME 니켈 현물가격, USD/톤)
-
----
-
-## 부록 C. 주요 참고문헌
+## 12. 참고문헌
 
 1. Lundberg, S. M., & Lee, S. I. (2017). A unified approach to interpreting model predictions. *NeurIPS*.
 2. Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. *KDD*.
 3. Ke, G., et al. (2017). LightGBM: A highly efficient gradient boosting decision tree. *NeurIPS*.
+
