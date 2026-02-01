@@ -284,6 +284,89 @@ CONFIG = {
    - ML 모델: 수익률(returns) 기반 학습 → 정상성 확보
    - Naive 모델: 가격 레벨(level) 기반 예측 → 추세 추종력 유지
 
+### 4.7 Walk-Forward Validation (확장 윈도우 백테스트)
+
+실무에서 시계열 예측 모델 평가의 표준 방법인 **Walk-Forward Validation**을 수행했다. 이 방법은 시간 순서를 유지하며 미래 정보 누출(look-ahead bias)을 방지한다.
+
+![Walk-Forward Validation](report_images/walk_forward_validation.png)
+
+**Walk-Forward 검증 결과** (n=117 windows):
+
+| Model | RMSE | MAE | MASE | Bias |
+|-------|------|-----|------|------|
+| **Naive Last** | **659.62** | **446.38** | **1.000** | +37.13 |
+| Naive Drift | 664.51 | 454.52 | 1.018 | +26.10 |
+| SMA(12) | 1888.90 | 1283.71 | 2.876 | +37.23 |
+| EMA(0.3) | 1144.75 | 758.47 | 1.699 | +15.94 |
+
+**MASE (Mean Absolute Scaled Error)** - Rob Hyndman이 제안한 업계 표준 지표:
+- MASE < 1: Naive 모델보다 우수
+- MASE = 1: Naive 모델과 동등 (baseline)
+- MASE > 1: Naive 모델보다 열등
+
+**핵심 인사이트**:
+1. **Naive Last가 최고 성능**: MASE=1.000으로 모든 모델의 기준선
+2. **SMA/EMA 열등**: 평활화 기법은 추세 추종에서 오히려 불리 (MASE > 1.5)
+3. **Naive Drift 근소 열등**: MASE=1.018로 1% 미만 차이 → 통계적 유의성 검정 필요
+
+### 4.8 Diebold-Mariano 검정 (예측 정확도 통계 비교)
+
+두 예측 모델의 정확도 차이가 통계적으로 유의한지 검증하는 **Diebold-Mariano (DM) 검정**을 수행했다.
+
+- **귀무가설 (H₀)**: 두 모델의 예측 정확도에 차이 없음
+- **대립가설 (H₁)**: 두 모델의 예측 정확도에 유의한 차이 있음
+
+| 비교 | DM 통계량 | p-value | 유의성 (α=0.05) |
+|------|-----------|---------|-----------------|
+| Naive Last vs Drift | -0.318 | 0.750 | **No** |
+| Naive Last vs SMA(12) | -3.840 | 0.0001 | **Yes*** |
+| Naive Last vs EMA | -3.460 | 0.0005 | **Yes*** |
+| Naive Drift vs SMA(12) | -3.789 | 0.0002 | **Yes*** |
+| Naive Drift vs EMA | -3.329 | 0.0009 | **Yes*** |
+
+**핵심 인사이트**:
+1. **Naive Last vs Drift: 유의한 차이 없음** (p=0.750) → 두 모델은 통계적으로 동등
+2. **Naive vs SMA/EMA: 유의한 차이 있음** → Naive가 통계적으로 우수
+3. **실무 의사결정**: Naive_Last와 Naive_Drift 중 어느 것을 선택해도 무방
+
+### 4.9 Ljung-Box 검정 (잔차 자기상관 진단)
+
+모델이 시계열 패턴을 충분히 포착했는지 진단하는 **Ljung-Box 검정**을 수행했다.
+
+- **귀무가설 (H₀)**: 잔차에 자기상관 없음 (모델이 패턴을 포착)
+- **대립가설 (H₁)**: 잔차에 자기상관 존재 (모델 개선 여지)
+
+![Ljung-Box ACF](report_images/ljung_box_acf.png)
+
+| Model | Q-통계량 | p-value | 잔차 자기상관 |
+|-------|----------|---------|---------------|
+| Naive Last | 28.69 | 0.0014 | **Yes** |
+| Naive Drift | 24.71 | 0.0059 | **Yes** |
+| SMA(12) | 98.78 | 0.0000 | **Yes** |
+| EMA(0.3) | 61.39 | 0.0000 | **Yes** |
+
+**핵심 인사이트**:
+1. **모든 모델에서 잔차 자기상관 존재**: 아직 포착되지 않은 시계열 패턴이 있음
+2. **Naive 모델이 상대적으로 양호**: Q-통계량이 가장 낮음 (28.69 vs 98.78)
+3. **실무 함의**: 잔차에 남은 패턴은 외부 충격(뉴스, 이벤트)일 가능성 → 완전 예측 불가
+
+### 4.10 Bias-Variance 분해 (예측 오차 분석)
+
+예측 오차를 **Bias**(체계적 편향)와 **Variance**(불안정성)로 분해하여 모델 특성을 분석했다.
+
+| Model | MSE | Bias² | Variance | Bias 기여% | Variance 기여% |
+|-------|-----|-------|----------|-----------|----------------|
+| **Naive Last** | 435,099 | 1,379 | 433,720 | 0.3% | **99.7%** |
+| Naive Drift | 441,573 | 681 | 440,892 | 0.2% | **99.8%** |
+| SMA(12) | 3,567,959 | 1,386 | 3,566,573 | 0.0% | 100.0% |
+| EMA(0.3) | 1,310,447 | 254 | 1,310,193 | 0.0% | 100.0% |
+
+**핵심 인사이트**:
+1. **모든 모델 Bias ≈ 0**: 체계적 과소/과대 예측 없음
+2. **Variance가 오차의 99%+**: 예측 불확실성은 노이즈에서 기인
+3. **Naive 모델의 강점**: 가장 낮은 Variance → 가장 안정적 예측
+4. **SMA/EMA 문제점**: 과도한 평활화가 오히려 Variance 증가 (추세 반영 실패)
+
 ---
 
 ## 5. 피처 선택: SHAP 기반 접근
@@ -892,6 +975,7 @@ sparta2/
 │
 ├── run_shap_selection.py    # SHAP 피처 선택 스크립트
 ├── run_advanced_analysis.py # STL 분해, ADI-CV 분류, ADF 검정 스크립트
+├── run_industry_analysis.py # Walk-Forward, DM 검정, Ljung-Box, Bias-Variance 분석
 ├── requirements.txt         # Python 의존성
 └── .gitignore               # Git 추적 제외 설정
 ```
