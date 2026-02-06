@@ -14,7 +14,7 @@
 | **피처 엔지니어링** | SHAP 기반 피처 선택 (19개 핵심 변수), 로그 수익률 변환, 금리차(Spread) 생성 |
 | **베이스라인 모델** | GradientBoosting, XGBoost, LightGBM, CatBoost, AdaBoost (5종) |
 | **Naive 모델** | Naive_Last (전주 동일), Naive_Drift (추세 지속), Damped (추세 감쇠) |
-| **고급 모델링** | Residual Stacking (2단계), ROR Stacking (3단계), **Hybrid Ensemble (Naive+ML)** |
+| **고급 모델링** | Residual Stacking (2단계), ROR Stacking (3단계), **Hybrid Ensemble (Naive + GradientBoosting)** |
 | **딥러닝 모델** | LSTM, Transformer (별도 노트북 실험, 과적합 확인) |
 
 ### 1.2 통합 결과표 (최종)
@@ -47,17 +47,55 @@
 
 #### Q1. 이번 미션에서 각자 가장 성능 향상 또는 성취를 이뤄낸 방법은 무엇이었나요?
 **A. "단순함(Simplicity)과 정교함(Complexity)의 최적 균형점 발견"**  
-가장 큰 성취는 수천 줄의 코드로 만든 모델보다 단순한 **Naive 모델의 가치**를 재발견하고, 이를 ML과 결합하여 성능을 극대화한 것입니다. 특히 **Hybrid 모델(Naive 80% + ML 20%)**을 고안하여 순수 Naive 대비 RMSE를 **약 15% 추가 개선(480 → 406)**해낸 것이 가장 유의미한 엔지니어링 성과였습니다.
+가장 큰 성취는 수천 줄의 코드로 만든 모델보다 단순한 **Naive 모델의 가치**를 재발견하고, 이를 ML과 결합하여 성능을 극대화한 것입니다. 특히 **Hybrid 모델(Naive 80% + GradientBoosting 20%)**을 고안하여 순수 Naive 대비 RMSE를 **약 15% 추가 개선(480 → 406)**해낸 것이 가장 유의미한 엔지니어링 성과였습니다.
 
 #### Q2. 가장 어려웠던 부분은 무엇이었나요?
 **A. "Logic vs Reality: 시장 레짐 변화(Regime Change) 규명"**  
 Validation에서는 완벽했던 ML 모델들이 Test에서 처참하게 실패했을 때 원인을 찾는 것이 가장 힘들었습니다. 버그가 아니라 **"Train(평균회귀) vs Test(일방적 급등)"**이라는 **시장 구조(Regime)의 불일치**가 원인임을 데이터를 통해 밝혀내는 과정이 고통스러웠지만, 이를 통해 "데이터의 맥락"을 이해하는 것이 모델링보다 중요함을 깨달았습니다.
 
+
 #### Q3. 추가 성능 향상될 것으로 생각되는 방법은 무엇인가요?
 **A. "시장 레짐 감지기(Market Regime Detector)를 통한 동적 대응"**  
 단일 모델로는 횡보장과 추세장을 모두 커버하기 어렵습니다. 따라서 변동성과 추세 강도를 실시간으로 측정하는 **Regime Detector**를 개발하여, 횡보장에서는 **ML**, 추세장에서는 **Naive** 비중을 동적으로 조절하는 **Meta-System**을 구축한다면 모든 시장 상황에서 견고한 성능을 낼 수 있을 것입니다.
 
+### 1.5 고급 실험 결과 (sparta2 이후)
+
+sparta2의 Hybrid(RMSE 406.80)를 개선하기 위해 추가 실험을 수행했다.
+
+#### 1.5.1 고급 피처 엔지니어링 (`sparta2_advanced.ipynb`)
+
+| 기법 | 설명 | 결과 |
+|------|------|------|
+| Realized Volatility | 4/8/12/26주 윈도우 변동성 | 개선 없음 |
+| Momentum Indicators | RSI, ROC, 가격 모멘텀 | 개선 없음 |
+| Mean Reversion | Z-score, 볼린저 위치 | 개선 없음 |
+| Regime Detection | 변동성 기반 국면 분류 | 통계적 유의미하지 않음 |
+| Conditional Models | 국면별 다른 모델 | 불안정 |
+
+#### 1.5.2 추가 모델 실험 (`sparta2_extras.ipynb`)
+
+| 모델 | 단독 RMSE | Hybrid (0.8:0.2) | 기준선 대비 |
+|------|-----------|------------------|------------|
+| ARIMA (3,1,2) | 1315.97 | **416.01** | **+3.12 개선** |
+| Quantile(50%) | - | 진행 중 | - |
+| Multi-Lag Features | - | 진행 중 | - |
+| LSTM | - | (TensorFlow 필요) | - |
+
+#### 1.5.3 엄격한 검증 결과 (`sparta2_final_solution.ipynb`)
+
+| 검증 방법 | 결과 |
+|----------|------|
+| **Time Series CV (5-Fold)** | 기준선 승률 0/5 (개선 아님) |
+| **Bootstrap 95% CI** | 모든 전략 CI가 0을 포함 (통계적 불확실) |
+| **Grid Search 튜닝** | LGB 최고 (Val RMSE 196.34 → Test RMSE 370.05) |
+
+#### 1.5.4 고급 실험 결론
+
+> **⚠️ 핵심 발견**: Test 기간(2025.10~2026.01)이 일방적 상승 추세여서 Naive 모델이 자연스럽게 우위를 차지했다. 고급 ML 기법들은 과거 '평균회귀' 패턴을 학습했기 때문에 새로운 '추세 지속' 패턴에 적응하지 못했다. 이는 시장 레짐 변화(Regime Change)의 전형적인 사례이다.
+
 ---
+
+
 
 ## 2. 연구 배경 및 목표
  
@@ -804,3 +842,69 @@ sparta2/
 2. Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. *KDD*.
 3. Ke, G., et al. (2017). LightGBM: A highly efficient gradient boosting decision tree. *NeurIPS*.
 
+---
+
+## 15. 최종 성능 비교표 (통합)
+
+### 15.1 전체 실험 결과 요약
+
+| 순위 | 모델 | Test RMSE | 기준선(406.80) 대비 | 출처 노트북 | 비고 |
+|------|------|-----------|-------------------|-------------|------|
+| **1** | **Hybrid (Naive*0.8 + GB*0.2)** | **406.80** | **기준선** | sparta2 | **✅ 최고 성능** |
+| 2 | Hybrid (Naive*0.8 + ARIMA*0.2) | 416.01 | -9.21 | sparta2_extras | ARIMA 조합 |
+| 3 | Baseline (Naive*0.8 + GB*0.2) 재검증 | 419.14 | -12.34 | sparta2_final_solution | 재검증 결과 |
+| 4 | Hybrid (Naive*0.9 + GB*0.1) | 423.67 | -16.87 | sparta2 | |
+| 5 | Naive_Drift_Damped (α=0.7) | 438.60 | -31.80 | sparta2 | |
+| 6 | Naive_Drift | 480.67 | -73.87 | sparta2 | |
+| 7 | LGB Tuned Hybrid (0.7:0.3) | 370.05 | +36.75 | sparta2_final_solution | ⚠️ Val에서만 좋음 |
+| 8 | ARIMA (단독) | 1315.97 | -909.17 | sparta2_extras | ❌ 단독 사용 불가 |
+| 9 | GradientBoosting (단독) | 1185.07 | -778.27 | sparta2 | ❌ 단독 사용 불가 |
+
+### 15.2 성능 개선 여부 판단
+
+| 항목 | 결과 |
+|------|------|
+| **최고 성능 모델** | Hybrid (Naive*0.8 + GB*0.2) = RMSE 406.80 |
+| **sparta2 이후 개선** | ❌ 통계적으로 유의미한 개선 없음 |
+| **원인** | Test 기간의 시장 레짐(일방적 상승)이 학습 패턴과 상이 |
+| **결론** | **Hybrid (0.8:0.2) 유지 권장** |
+
+### 15.3 검증 방법론 결과
+
+| 검증 방법 | 결과 | 의미 |
+|----------|------|------|
+| Time Series CV (5-Fold) | 승률 0/5 | 개선이 일관적이지 않음 |
+| Bootstrap 95% CI | 모두 0 포함 | 통계적 불확실 |
+| Walk-Forward Validation | 진행 예정 | - |
+
+---
+
+## 16. 노트북 파일 가이드
+
+### 16.1 제출용 파일
+
+| 파일명 | 역할 | 핵심 내용 |
+|--------|------|----------|
+| `sparta2.ipynb` | **메인 분석** | Baseline, SHAP, Stacking, Hybrid 발견 |
+| `sparta2_advanced.ipynb` | **고급 기법** | Regime Detection, Momentum, OLS Combination |
+| `sparta2_extras.ipynb` | **추가 모델** | ARIMA, Quantile, Multi-Lag |
+
+### 16.2 참고용 파일
+
+| 파일명 | 역할 | 핵심 내용 |
+|--------|------|----------|
+| `sparta2_final_solution.ipynb` | **엄격한 검증** | Grid Search, Time Series CV, Bootstrap |
+| `dl_lstm_transformer.ipynb` | **딥러닝 실험** | LSTM, Transformer (과적합 확인) |
+
+### 16.3 핵심 결론
+
+> **⚠️ 연구 결과**: sparta2에서 발견한 **Hybrid(Naive*0.8 + GB*0.2)**가 여전히 최고 성능이다.
+> 
+> 추가로 시도한 고급 기법들(Regime Detection, ARIMA, Multi-Lag 등)은 Validation에서는 좋아 보였으나,
+> 엄격한 검증(Time Series CV, Bootstrap) 결과 **통계적으로 유의미한 개선을 확인하지 못했다**.
+>
+> 이는 Test 기간(2025.10~2026.01)의 **시장 레짐 변화**(평균회귀 → 추세 지속)가 원인이다.
+
+---
+
+**End of Report**
