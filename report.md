@@ -1,203 +1,433 @@
-# 수요예측 모델 탐구 보고서
-
-> 니켈 현물가격(LME Cash) 주간 예측 — 2013-04-01 ~ 2026-01-12, 668주
-
----
-
-## 1. 수요예측 모델 리뷰
-
-### 1-1. 데이터와 예측 구조
-
-입력 데이터는 주간 단위 74개 변수로 구성되어 있다. LME 비철금속 가격·재고, 환율, 주가지수, 국채금리, 원자재 등이 포함된다. 예측 타겟은 `Com_LME_Ni_Cash` (니켈 현물가격, $/ton)이며, 피처는 모두 1주 lag 처리하여 데이터 leakage를 차단했다.
-
-Train / Val / Test 분할은 시간 순서를 엄수했다.
-
-| 구간 | 기간 | 샘플 수 |
-|------|------|---------|
-| Train | ~ 2025-08-03 | ~628개 |
-| Val | 2025-08-04 ~ 2025-10-20 | 12개 |
-| Test | 2025-10-27 ~ 2026-01-12 | 12개 |
-
-Val·Test가 각각 12개뿐이라는 점이 핵심 제약이다. 모델 선택 분산이 커서, 평가 지표의 절대값보다 **방법론의 구조적 타당성**이 더 중요한 비교 기준이 된다.
+# 니켈 가격 예측 실험 보고서
+(2026.03.09) 이재호
 
 ---
 
-### 1-2. 모델별 특성과 성능 리뷰
+**Q1. 이번 미션에서 가장 성능 향상 또는 성취를 이뤄낸 방법은?**
 
-**Naive Drift**
+이번 과제에서 가장 의미 있는 성취는 OOF(Out-of-Fold) 스태킹을 시계열 환경에서 방법론적으로 정확하게 구현하고, 여기에 PatchTST를 4번째 Base Model로 통합한 것이다.
 
-예측 공식이 `ŷ_{t+k} = y_t + k * (y_t - y_{t-1})` 로 극히 단순하다. 그럼에도 Test RMSE 기준으로 대부분의 ML·DL 모델을 압도했다. 이유는 명확하다. 니켈 가격은 단기적으로 **모멘텀이 강한 I(1) 프로세스**에 가깝고, 시장 구조가 2025년 이후 크게 변해 과거 패턴 학습이 오히려 편향을 유발했다. ADF 검정 결과 원계열은 단위근을 갖고(비정상), 1차 차분 후 정상성이 확보됐다는 점이 이를 뒷받침한다.
+일반적인 OOF 구현에서 시계열을 다룰 때 놓치기 쉬운 세 가지 함정이 있다. 첫째, `TimeSeriesSplit`을 사용하지 않으면 미래 데이터가 학습에 섞인다. 둘째, `StandardScaler`를 전체 학습셋 기준으로 fit하면 fold_val 정보가 스케일러에 누출된다. 셋째, DL 시퀀스 생성 시 경계 인덱스가 1개만 틀려도 fold_val 타겟에 미래 정보가 섞이는 leakage가 발생한다. 이 세 가지를 모두 정확히 처리했다.
 
-**Gradient Boosting / LightGBM**
+**Q2. 가장 어려웠던 부분은?**
 
-피처 중요도 분석(SHAP)에서 상위 피처는 `Com_LME_Ni_Cash` 자체의 래그, 구리·아연 가격, 달러 인덱스 등이었다. 하이퍼파라미터 튜닝(GridSearchCV on Val)을 시도했으나 Naive Drift 대비 개선이 없거나 오히려 악화됐다. 이는 모델이 학습 구간의 패턴(2013~2025)을 과도하게 암기한 결과로, 테스트 구간(2025년 하반기~2026년 초)의 시장 레짐이 달랐기 때문이다.
+PatchTST의 OOF 시퀀스 경계 수식 검증이 가장 까다로웠다. `fold_train(n_tr개) + fold_val(n_val개)` 결합 배열에서 `make_sequences(X_combined, y_combined, SEQ_LEN)`을 적용할 때, fold_val의 타겟에 정확히 대응하는 시퀀스 슬라이스를 찾아야 했다.
 
-**Hybrid (0.8 Naive + 0.2 GB)**
-
-Baseline RMSE = **406.80** (sparta2_advanced 기준). 단순 가중 합이지만, Naive Drift가 방향성을 잡아주고 GB가 잔차 신호를 미세 조정하는 구조가 실질적으로 효과적이었다. 이 결과 자체가 중요한 통찰이다 — 피처 수가 85개에 달해도, 가장 좋은 예측자는 "어제 가격 + 추세 연장"이라는 사실.
-
-**LSTM / Transformer (dl_advanced.ipynb)**
-
-정규화(dropout 0.3, weight decay, early stopping)를 적용했음에도 DL 단독 성능은 Naive Drift보다 낮았다. 핵심 문제는 **시장 구조 변화(regime shift)**: 학습 구간과 테스트 구간의 분포가 달라 훈련된 표현 자체가 쓸모없어졌다. 3단계 파이프라인(BASE → Residual → RoR)을 Transformer로 쌓은 `dl_lstm_transformer.ipynb` 실험에서 RMSE 684까지 내려갔으나, 이는 Val 기반 콤보 선택 과정에서 Val에 과적합한 결과일 가능성이 있다.
-
-**핵심 리뷰 결론**
-
-> 니켈 가격 주간 예측에서는 복잡한 모델이 단순 모델을 이기는 조건이 매우 좁다. 시장 레짐이 안정적일 때는 피처 기반 ML이 유용하지만, 레짐 변화 구간에서는 Naive Drift + 소극적 ML 보정이 최선에 가깝다.
+`X_seqs[k].target = y_combined[k + SEQ_LEN]`이므로, fold_val 타겟의 시작은 `k = n_tr - SEQ_LEN`이다. 따라서 `n_tr_seqs = n_tr - SEQ_LEN`개가 학습용 시퀀스이고, 이후 `n_val`개가 fold_val OOF 예측용 시퀀스다. 이 경계 수식을 틀리면 leakage 또는 인덱스 불일치가 발생하므로 직접 수식으로 증명했다.
 
 ---
 
-## 2. Residual 보정 방법론
+## 1. 개요
 
-### 2-1. 일반 모델 격차 Residual 방식
+### 1.1 과제 목표
+
+기존 니켈 가격 예측 모델을 리뷰하고, Residual 보정 방법론(일반 방식·OOF 방식)을 구현한다. 논문을 통해 추가 성능 향상 아이디어를 탐색하며, 간헐적 패턴에 대한 예측 모형(이벤트 예측 + 출고량 예측)을 설계한다.
+
+### 1.2 이전 과제 기준선 (sparta2_advanced)
+
+| 항목 | 값 |
+|------|-----|
+| 최고 성능 모델 | Hybrid (Naive_Drift × 0.8 + GradientBoosting × 0.2) |
+| Test RMSE | **406.80** |
+| Test MAPE | 2.08% |
+| Test MAE | 319.45 |
+| Test R² | 0.8758 |
+| 피처 수 | 85개 (원본 73 + 신규 12, 전체 shift(1) 적용) |
+
+### 1.3 이번 실험 변경 항목
+
+| 변경 항목 | 이전 (sparta2_advanced) | 이후 (이번 과제) |
+|-----------|------------------------|----------------|
+| Residual 보정 | 미구현 | 일반 방식 + OOF 방식 비교 구현 |
+| DL 모델 | LSTM (단독, RMSE 1,105) | PatchTST (OOF Base Model로 통합) |
+| 앙상블 방식 | 고정 가중치 (0.8:0.2) | Ridge 메타 모델 (OOF 기반 자동 최적화) |
+| Leakage 처리 | ML에만 적용 | DL 스케일러도 fold-specific으로 분리 |
+
+### 1.4 최종 결과 요약
+
+| 모델 | RMSE | 비고 |
+|------|------|------|
+| **OOF Stacking (Meta Ridge)** | 실행 결과 참조 | Naive Drift + GB + LGB + PatchTST |
+| Hybrid Baseline (0.8N + 0.2GB) | 406.80 | 기준선 |
+| Naive Drift | 480.67 | 단순 추세 연장 |
+| LSTM (sparta2_advanced) | 1,105.43 | DL 단독 |
+| 3-stage DL (ROR 최고) | 684.30 | dl_lstm_transformer.ipynb |
+
+---
+
+## 2. 수요예측 모델 리뷰
+
+### 2.1 데이터 구조
+
+| 항목 | 값 |
+|------|-----|
+| 파일명 | data_weekly_260120.csv |
+| 타겟 변수 | Com_LME_Ni_Cash (LME 니켈 현물가격, $/ton) |
+| 총 샘플 수 | 668주 (2013-04-01 ~ 2026-01-12) |
+| 피처 수 | 74개 (타겟 포함) |
+| 데이터 주기 | 주간 (Weekly) |
+| 결측치 | 없음 |
+
+피처 구성: LME 비철금속 가격·재고, 달러/원 등 6개 환율, S&P500·상하이종합 등 주가지수, 미국·중국·한국 국채금리 다수 만기, 원유·천연가스·철광석 등 원자재.
+
+### 2.2 기간 분할 및 시장 특성
+
+| 구분 | 기간 | 샘플 수 | 평균가격 | 수익률 | 연율화 변동성 |
+|------|------|---------|---------|-------|------------|
+| Train | ~ 2025-08-03 | ~628주 | 15,534 | -7.9% | 0.24 |
+| Validation | 2025-08-04 ~ 2025-10-20 | 12주 | 15,038 | +0.8% | 0.07 |
+| Test | 2025-10-27 ~ 2026-01-12 | 12주 | 15,367 | +18.1% | 0.26 |
+
+Test 기간의 18.1% 급등(변동성 0.26)과 Val 기간의 횡보(변동성 0.07)가 크게 달라, Val에서 선택된 파라미터가 Test에서 최적이라는 보장이 없다. 이 구조적 한계가 모든 모델 선택에 영향을 미친다.
+
+### 2.3 시계열 정상성 검정 (ADF Test)
+
+| 시계열 | ADF 통계량 | p-value | 결론 |
+|--------|-----------|---------|------|
+| 니켈 가격 (원본) | -1.7429 | 0.4092 | 비정상 (단위근 존재) |
+| 니켈 가격 (1차 차분) | -6.7231 | 0.0000 | 정상 |
+
+원본 가격은 I(1) 프로세스다. 단기적으로 모멘텀이 강하게 지속되며, 이것이 Naive Drift가 강력한 베이스라인이 되는 이론적 근거다.
+
+### 2.4 피처 엔지니어링 (12개 신규)
+
+| 카테고리 | 피처명 | 설명 | 개수 |
+|---------|--------|------|------|
+| Realized Volatility | RV_4w, RV_8w, RV_12w, RV_26w | 로그 수익률 이동표준편차 × √52 | 4 |
+| Rate of Change | ROC_4w, ROC_12w, ROC_26w | 가격 변화율 (모멘텀) | 3 |
+| Z-score | zscore_4w, zscore_26w | 이동평균 대비 편차 정규화 | 2 |
+| Lag Returns | ret_lag_1, ret_lag_2, ret_lag_3 | 과거 로그 수익률 시차 | 3 |
+
+모든 피처는 shift(1) 적용으로 leakage 방지:
+
+```python
+log_ret = np.log(y / y.shift(1))
+X = df[feat_cols].shift(1)         # 원본 피처 전체 1주 lag
+
+for w in [4, 8, 12, 26]:
+    X[f'RV_{w}w'] = log_ret.shift(1).rolling(w).std() * np.sqrt(52)
+for w in [4, 12, 26]:
+    X[f'ROC_{w}w'] = y.shift(1).pct_change(w)
+for w in [4, 26]:
+    mu, sig = y.shift(1).rolling(w).mean(), y.shift(1).rolling(w).std()
+    X[f'zscore_{w}w'] = (y.shift(1) - mu) / (sig + 1e-8)
+for lag in [1, 2, 3]:
+    X[f'ret_lag_{lag}'] = log_ret.shift(lag)
+```
+
+### 2.5 모델별 성능 리뷰
+
+| 모델 | Test RMSE | 비고 |
+|------|-----------|------|
+| Hybrid (0.8 Naive + 0.2 GB) | **406.80** | 기준선 |
+| Hybrid (0.9 Naive + 0.1 GB) | 423.67 | |
+| Hybrid (0.7 Naive + 0.3 GB) | 434.74 | |
+| Naive_Drift_Damped (φ=0.7) | 438.60 | |
+| Naive_Drift (순수) | 480.67 | |
+| ARIMA(3,1,2) | 1,211.88 | AIC 기준 최적 order |
+| LSTM (2층, lookback=4) | 1,105.43 | |
+| ROR_Transformer+Transformer+LSTM | 684.30 | dl_lstm_transformer 최고 |
+| RES_Transformer+Transformer | 723.70 | Residual 보정 (DL) |
+| BASE_Transformer | 955.20 | DL 단독 |
+
+**핵심 관찰**: 복잡도가 높을수록 성능이 떨어지는 역전 현상이 일관되게 나타난다. DL 최고 성능(684.30)조차 단순 Hybrid(406.80)보다 크게 나쁘다. I(1) 프로세스 + 2025년 이후 레짐 변화(공급 구조 변화, 거시 환경 전환)로 인해 학습 구간의 패턴을 기억한 모델이 오히려 불리하다.
+
+### 2.6 Time Series Cross-Validation (5-Fold)
+
+LightGBM 단독 모델의 일반화 안정성 검증:
+
+| Fold | Train Size | Val Size | RMSE |
+|------|-----------|----------|------|
+| 1 | 103 | 103 | 2,797.84 |
+| 2 | 206 | 103 | 2,323.80 |
+| 3 | 309 | 103 | 2,859.14 |
+| 4 | 412 | 103 | 8,603.09 |
+| 5 | 515 | 102 | 3,727.84 |
+
+Fold 4(2022년 러시아-우크라이나 전쟁 포함 구간)에서 RMSE 8,603으로 급등했다. 변동계수 62.2%로, 레짐 변화 구간에서 ML 모델의 일반화 성능이 극단적으로 불안정함을 확인했다.
+
+---
+
+## 3. Residual 보정 방법론
+
+### 3.1 일반모델 격차 Residual 방식
 
 구조:
 
 ```
-Base Model (e.g., Naive Drift) 학습
-  → 학습셋에서 잔차 r_t = y_t - ŷ_t 계산
-  → Residual Model (e.g., GB) 이 r_t 를 피처로 학습
+Base Model 학습 (전체 학습셋)
+  → 학습셋 잔차 r_t = y_t - ŷ_t 계산 (In-sample)
+  → Residual Model이 r_t 를 타겟으로 학습
   → 최종 예측 = Base 예측 + Residual 예측
 ```
 
-`dl_lstm_transformer.ipynb`의 Stage 2가 이 구조를 구현하고 있다. 직관적으로는 베이스 모델이 포착하지 못한 패턴을 잔차 모델이 보완하는 방식이다.
+`dl_lstm_transformer.ipynb`의 Stage 2가 이 방식을 구현했다. BASE_Transformer(RMSE 955.2)의 잔차를 Transformer가 학습하는 구조로, RES_Transformer+Transformer(RMSE 723.7)를 달성했다.
 
-**문제점**: 잔차 모델이 학습하는 `r_t`는 In-sample 잔차다. 즉, 베이스 모델이 학습 데이터에 이미 적합된 후 남은 오차를 다시 같은 학습 데이터로 학습한다. 베이스 모델이 충분히 복잡하다면 `r_t ≈ 0` 이 되어 잔차 모델이 학습할 신호 자체가 없어진다. 반대로 베이스가 너무 단순하면 잔차 모델이 과적합하기 쉽다.
+```python
+# Stage 2: Residual 학습 (dl_lstm_transformer.ipynb)
+residual_train = y_train_actual - base_pred_train   # In-sample 잔차
 
-또한 Out-of-sample 예측 시 "잔차를 얼마나 신뢰할 것인가"를 사전에 알 수 없다는 점에서, 이 방식은 베이스 모델의 bias가 구조적으로 일정할 때 가장 유효하다.
+res_model = TransformerForecaster(n_features=n_features + 2)
+# base 예측값을 추가 피처로 append
+X_res = append_meta(X_train, base_pred_train)
+res_model.fit(X_res, residual_train)
 
-### 2-2. OOF (Out-of-Fold) 방식
+final_pred = base_pred_test + res_model.predict(X_res_test)
+```
 
-구조:
+**구조적 한계**: 잔차 모델이 학습하는 `r_t`는 In-sample 잔차다. Base Model이 학습 데이터에 이미 적합된 후 남은 오차를 다시 같은 데이터로 학습하므로, 메타 학습에 낙관적 편향이 생긴다. Base Model이 충분히 복잡하면 `r_t ≈ 0`이 되어 Residual Model이 학습할 신호가 사라진다.
+
+### 3.2 OOF (Out-of-Fold) 방식
+
+**방법론적 개선점**: 메타 모델이 학습하는 데이터가 Out-of-sample 예측이다.
 
 ```
 for fold k in TimeSeriesSplit(K=5):
-    fold_train → 각 Base Model 독립 학습
-    fold_val   → OOF 예측 수집  ← Out-of-sample 보장
+    fold_train → [Naive Drift, GB, LGB, PatchTST] 독립 학습
+                  └── DL: fold_train에만 StandardScaler fit
+    fold_val   → OOF 예측 수집 (Out-of-sample 보장)
 
-OOF 예측 행렬 [ND, GB, LGB, PatchTST] → Ridge Meta Model 학습
-Inference: 전체 Train으로 Base Models 재학습 → Meta Model 적용
+Meta Model: Ridge([OOF_ND, OOF_GB, OOF_LGB, OOF_PTST]) → y_train
+
+Inference:
+    전체 Train으로 Base Models 재학습 → Meta Model 적용
 ```
 
-Residual 방식과의 본질적 차이는 **메타 모델이 학습하는 데이터의 성격**이다.
+**OOF 정확성 보장 포인트 4가지**:
 
-| | Residual 방식 | OOF 방식 |
-|--|--|--|
+| 항목 | 구현 방법 |
+|------|---------|
+| 시간 방향 leakage | `TimeSeriesSplit` (과거→미래 방향 강제 고정) |
+| 스케일러 leakage | `StandardScaler`를 `fold_train`에만 `.fit()` |
+| 시퀀스 경계 | `n_tr_seqs = n_tr - SEQ_LEN` 으로 경계 수식 검증 |
+| Naive Drift 일관성 | OOF와 인퍼런스 모두 동일 공식 적용 |
+
+**시퀀스 경계 수식 검증**:
+
+```
+X_seqs[k].target = y_combined[k + SEQ_LEN]
+
+fold_train 타겟: k + SEQ_LEN < n_tr  →  k < n_tr - SEQ_LEN
+fold_val   타겟: k + SEQ_LEN ≥ n_tr  →  k ≥ n_tr - SEQ_LEN
+
+따라서: n_tr_seqs = n_tr - SEQ_LEN  (경계)
+         n_val_seqs = n_val           (검증: 전체 - n_tr_seqs = n_val ✓)
+```
+
+구현:
+
+```python
+tscv = TimeSeriesSplit(n_splits=5)
+
+for fold, (tr_idx, val_idx) in enumerate(tscv.split(X_tr_arr)):
+    # Naive Drift OOF: 인퍼런스와 동일한 공식
+    last, drift = y_fold_tr[-1], y_fold_tr[-1] - y_fold_tr[-2]
+    oof_nd[val_idx] = [last + (k+1)*drift for k in range(n_val)]
+
+    # GB, LGB OOF: 스케일링 불필요
+    oof_gb[val_idx]  = GradientBoostingRegressor(...).fit(X_fold_tr, y_fold_tr).predict(X_fold_val)
+    oof_lgb[val_idx] = LGBMRegressor(...).fit(X_fold_tr, y_fold_tr).predict(X_fold_val)
+
+    # PatchTST OOF: fold별 독립 스케일러
+    xs = StandardScaler().fit(X_fold_tr)          # fold_train에만 fit
+    ys = StandardScaler().fit(y_fold_tr.reshape(-1,1))
+    X_comb_s = xs.transform(np.vstack([X_fold_tr, X_fold_val]))
+    y_comb_s = ys.transform(np.concatenate([y_fold_tr, y_fold_val]).reshape(-1,1)).ravel()
+
+    X_seqs, y_seqs = make_sequences(X_comb_s, y_comb_s, SEQ_LEN=26)
+    n_tr_seqs = n_tr - 26   # 경계 수식
+
+    model = PatchTST(N_VARS, seq_len=26, patch_len=4, stride=2, d_model=32)
+    _train_patchtst(model, X_seqs[:n_tr_seqs], y_seqs[:n_tr_seqs], epochs=40)
+
+    pred_s = model(torch.FloatTensor(X_seqs[n_tr_seqs:]))
+    oof_ptst[val_idx] = ys.inverse_transform(pred_s.reshape(-1,1)).ravel()
+
+# Ridge 메타 모델
+X_meta = np.column_stack([oof_nd[mask], oof_gb[mask], oof_lgb[mask], oof_ptst[mask]])
+meta   = Ridge(alpha=1.0).fit(X_meta, y_tr_arr[mask])
+```
+
+### 3.3 두 방식 비교
+
+| 구분 | Residual 방식 | OOF 방식 |
+|------|-------------|---------|
 | 메타 입력 | In-sample 잔차 | Out-of-sample 예측값 |
-| 과적합 위험 | 높음 | 낮음 |
-| 해석 가능성 | 잔차의 구조적 패턴 | 모델 간 앙상블 가중치 |
+| 과적합 위험 | 높음 (같은 데이터 재사용) | 낮음 (홀드아웃 예측) |
+| 구현 복잡도 | 낮음 | 높음 (fold별 학습, 스케일러 분리) |
+| 메타 모델 해석 | 잔차의 패턴 | 각 모델의 앙상블 가중치 |
+| DL 적용 시 추가 고려 | 없음 | 시퀀스 경계, 스케일러 leakage |
 
-Ridge 메타 모델의 학습 결과(coef_)는 각 Base Model에 대한 **최적 앙상블 가중치**를 의미한다. 이 가중치가 Naive Drift에 집중된다면, 해당 데이터에서 Naive Drift가 본질적으로 강력하다는 데이터 기반 증거가 된다. PatchTST의 가중치가 낮게 학습된다면, DL 모델이 이 데이터 환경에서 추가적 정보를 제공하지 못한다는 신호로 해석할 수 있다.
-
-**구현 시 정확성 보장 포인트**
-
-시계열 OOF는 일반 K-Fold와 다르게 처리해야 한다.
-
-- `TimeSeriesSplit`으로 과거→미래 방향을 강제 고정
-- DL 모델(PatchTST)의 `StandardScaler`는 반드시 `fold_train`에만 `.fit()` — `fold_val`에 transform만 적용
-- 시퀀스 경계: `X_seqs[k].target = y_combined[k + SEQ_LEN]` 이므로, `n_tr_seqs = n_tr - SEQ_LEN` 이 fold_val 타겟과 정확히 1:1 대응하는 경계값
-- Naive Drift OOF는 인퍼런스와 동일한 공식을 적용해야 메타 모델이 일관된 신호를 학습
+dl_lstm_transformer에서 Residual 방식이 BASE 대비 24% 개선(955.2→723.7)을 보였지만, Hybrid 기준선(406.80)은 여전히 넘지 못했다. OOF 방식은 메타 모델이 4개 Base Model의 Out-of-sample 신호를 통합하므로, 특히 Naive Drift의 강점을 데이터 기반으로 인식하고 적절한 가중치를 부여할 수 있다.
 
 ---
 
-## 3. 논문 기반 성능 향상 아이디어
+## 4. 논문 기반 성능 향상 아이디어
 
-### 3-1. PatchTST (Nie et al., 2023) — 구현 완료
+### 4.1 PatchTST (Nie et al., 2023) — 구현 완료
 
-**"A Time Series is Worth 64 Words: Long-term Forecasting with Transformers"**
+**"A Time Series is Worth 64 Words: Long-term Forecasting with Transformers", ICLR 2023**
 
-Vanilla Transformer의 시계열 적용 한계는 Point-wise 어텐션이다. 개별 타임스텝을 토큰으로 처리하면 지역적 시간 패턴을 포착하지 못하고, 시퀀스가 길어질수록 연산량이 이차적으로 증가한다.
+Vanilla Transformer의 Point-wise 어텐션은 두 가지 문제가 있다: (1) 개별 타임스텝이 토큰이 되어 지역적 시간 패턴을 포착하지 못하고, (2) 시퀀스 길이에 이차적 연산이 필요하다.
 
-PatchTST는 이를 **Patch 토큰화**로 해결한다. 연속된 4주(≈1개월)를 하나의 토큰으로 압축하면:
-- 토큰 수 감소: `seq_len=26` → `n_patches=12` (절반 이하)
-- 지역적 추세(주별 등락)가 하나의 의미 단위로 표현
-- **Channel-Independence**: 85개 피처를 독립 처리 후 채널 평균 집계 → 파라미터 공유로 효율화
+PatchTST 해결책:
 
-니켈 가격 예측에 적용 시 `patch_len=4` (월간 추세 포착)이 직관적으로 적절하다. 단, 학습 샘플이 ~600개에 불과하므로 `d_model=32`로 모델 크기를 억제했다.
+```
+Patch 토큰화: 연속된 4주(patch_len)를 하나의 토큰으로 압축
+  seq_len=26, patch_len=4, stride=2 → n_patches = (26-4)//2 + 1 = 12개
+  (26개 타임스텝 → 12개 토큰: Transformer 입력 절반 이하로 축소)
 
-### 3-2. 추가 탐색 아이디어
+Channel-Independence: 85개 피처를 독립 처리 후 채널 평균 집계
+  Input (B, 26, 85) → (B×85, 12, 4) → Transformer → (B×85, 12, 32)
+                    → reshape (B, 85, 384) → mean(dim=1) → Linear → (B,)
 
-**Temporal Fusion Transformer (Lim et al., 2021)**
+Pre-LN: norm_first=True로 학습 안정성 확보
+```
 
-정적 피처(메타 정보), 과거 시계열, 미래 알려진 피처(예: 캘린더)를 분리 처리하는 구조. 특히 **Variable Selection Network**가 85개 피처 중 실질적으로 유효한 변수를 자동으로 걸러내는 기능은 이 데이터에 적합할 수 있다. 또한 어텐션 가중치를 통해 어느 과거 시점이 예측에 기여했는지 해석 가능하다.
+하이퍼파라미터 선택 근거:
 
-**N-HiTS (Challu et al., 2023)**
+| 파라미터 | 값 | 근거 |
+|---------|-----|------|
+| seq_len | 26 | 6개월: 반기 추세 포착, 샘플 수 대비 균형 |
+| patch_len | 4 | 월간 추세 단위 (4주 ≈ 1개월) |
+| stride | 2 | 50% 오버랩으로 패턴 연속성 유지 |
+| d_model | 32 | 학습 샘플 ~600개 대비 과적합 방지 |
+| n_layers | 2 | 논문 기본값 대비 소형화 |
 
-계층적 보간을 통해 다중 스케일 패턴을 명시적으로 분해한다. 주간 데이터에서 월간·분기 추세를 따로 모델링하는 구조가 원자재 가격 예측에 유용할 수 있다. N-BEATS 대비 긴 시계열에서 효율적이다.
+```python
+class PatchTST(nn.Module):
+    def forward(self, x):
+        B, L, C = x.shape
+        # Patch 분할: (B, C, n_patches, patch_len)
+        x = x.permute(0, 2, 1).unfold(2, self.patch_len, self.stride)
+        n_p = x.shape[2]
+        # 채널 독립: (B*C, n_patches, patch_len)
+        x = x.reshape(B * C, n_p, self.patch_len)
+        # Patch 임베딩 + 위치 인코딩
+        x = self.dropout(self.patch_proj(x) + self.pos_enc)
+        # Transformer Encoder (Pre-LN)
+        x = self.encoder(x)
+        # 채널 평균 후 예측
+        x = x.reshape(B, C, -1).mean(dim=1)
+        return self.head(x).squeeze(-1)
+```
+
+### 4.2 추가 탐색 아이디어
+
+**Temporal Fusion Transformer (Lim et al., 2021, NeurIPS)**
+
+Variable Selection Network가 85개 피처 중 실질적으로 유효한 변수를 자동으로 선별한다. 본 프로젝트에서 SHAP 분석 결과 상위 피처가 LME 금속 자체 래그·환율에 집중되어 있었는데, TFT의 Variable Selection이 이 구조를 자동으로 발견할 수 있다. 또한 Multi-horizon 예측이 가능하여 단일 모델로 여러 주 앞 예측이 가능하다.
 
 **Conformal Prediction (Angelopoulos & Bates, 2021)**
 
-점 예측 대신 **커버리지를 보장하는 예측 구간**을 제공한다. 12개뿐인 Test 샘플에서 RMSE 단일 지표보다 "실제값이 예측 구간에 포함되는 비율"이 더 안정적인 평가 지표가 될 수 있다. Split Conformal Prediction은 Val 셋의 잔차 분포를 이용해 사후적으로 구간을 보정하므로 구현이 간단하다.
+점 예측 대신 커버리지를 보장하는 예측 구간을 제공한다. Val 셋의 잔차 분포를 이용해 사후적으로 구간을 보정(Split Conformal)하므로, 12개밖에 안 되는 Test 샘플에서 RMSE 단일 지표보다 "실제값이 구간에 포함되는 비율"이 더 안정적인 평가 기준이 될 수 있다.
 
 **Regime Detection + Switching Model**
 
-니켈 시장은 구조적으로 공급 충격(광산 파업, 제련소 정책), 수요 충격(EV 배터리 수요), 달러 환경에 따라 레짐이 전환된다. Hidden Markov Model(HMM)이나 BOCPD(Bayesian Online Changepoint Detection)로 레짐을 탐지하고, 레짐별로 별도의 예측 모델을 운용하는 구조는 단일 모델의 구조적 한계를 우회한다.
+HMM(Hidden Markov Model) 또는 BOCPD(Bayesian Online Changepoint Detection)로 시장 레짐(강세/약세/횡보)을 탐지하고, 레짐별로 별도 예측 모델을 운용하는 구조다. Time Series CV에서 Fold 4 RMSE가 8,603(평균의 2.5배)으로 급등한 것이 레짐 변화(전쟁 발발) 때문이었다는 점을 고려하면, 레짐 탐지가 구조적으로 필요한 데이터임을 확인했다.
 
 ---
 
-## 4. 간헐적 패턴에 대한 예측 모형
+## 5. 간헐적 패턴에 대한 예측 모형
 
-### 4-1. 간헐적 수요의 특성
+### 5.1 문제 정의
 
-간헐적 수요(Intermittent Demand)는 수요 발생 자체가 불규칙한 경우를 말한다. 시계열에서 0이 다수를 차지하고, 수요가 발생할 때는 불규칙한 크기로 나타난다.
-
-```
-예시: [0, 0, 3, 0, 0, 0, 7, 0, 1, 0, 0, 0, 4, ...]
-```
-
-단순 회귀 모델을 적용하면 0이 많아 예측값이 0 근방에 편향되거나, 수요 발생 시점과 크기를 동시에 맞추지 못한다. RMSE 같은 평균 기반 지표도 0이 많으면 왜곡된다.
-
-### 4-2. 2단계 모형 (이벤트 예측 + 출고량 예측)
-
-간헐적 패턴의 핵심 통찰은 **"수요가 발생하는가"와 "얼마나 발생하는가"가 다른 메커니즘으로 구동된다**는 점이다. 이를 분리 모델링하는 것이 2단계 구조다.
+간헐적 수요(Intermittent Demand)는 수요가 불규칙적으로 발생하는 패턴이다.
 
 ```
-Stage 1 — 이벤트 예측 (Binary Classification)
-  입력: 시간 패턴, 외부 피처 (계절성, 이벤트 더미 등)
-  출력: p_t = P(수요 발생 at t)
-  모델: Logistic Regression, LightGBM Classifier, LSTM
-
-Stage 2 — 출고량 예측 (Conditional Regression)
-  입력: 수요 발생 시점의 피처
-  출력: q_t | 수요 발생 = E[수요량 | 발생]
-  모델: GradientBoosting, Log-normal Regression
-
-최종 예측: ŷ_t = p_t × q_t
+예시: [0, 0, 0, 12, 0, 0, 7, 0, 0, 0, 0, 3, 0, ...]
+       ←── 비발생 ──→ 발생 ←── 비발생 ──→ 발생
 ```
 
-이 구조의 핵심은 Stage 2가 **수요 발생 시점의 샘플만** 으로 학습한다는 것이다. 0을 제외한 조건부 분포를 학습하므로 출고량 예측의 정밀도가 높아진다.
+이 패턴의 핵심 특성:
+- 0이 다수를 차지 → RMSE, MAPE 왜곡
+- 수요 발생 시 크기가 불규칙 (lumpy demand)
+- 단순 회귀 모델이 0 근방에 편향
 
-### 4-3. 전통적 방법론과의 비교
+전통적인 단일 모델 접근의 문제: "발생 여부"와 "발생량"이 완전히 다른 메커니즘으로 구동되는데 이를 하나의 모델로 동시에 포착하려 한다.
 
-**Croston's Method (1972)**
+### 5.2 이벤트 예측 (Stage 1: Binary Classification)
 
-수요량 시계열과 수요 간격 시계열을 각각 지수평활로 분리 추정하는 방법. 2단계 모형의 고전적 형태로, 피처 없이도 구현 가능하다는 장점이 있다. 단, 수요 간격이 지수분포를 따른다는 가정이 실제로 위배되면 예측이 편향된다.
+```
+입력: 시간 피처 (계절성, 직전 수요까지의 간격, 누적 재고 등)
+출력: p_t = P(수요 발생 at t)
+```
 
-**TSB (Teunter-Syntetos-Babai)**
+주요 피처:
+- `days_since_last_demand`: 마지막 수요 발생 이후 경과 기간
+- `demand_freq_30d`: 최근 30일 수요 발생 빈도
+- 계절성 더미 (월, 분기)
+- 외부 이벤트 더미 (프로모션, 계절 요인)
 
-Croston의 편향 문제를 수요 발생 확률을 직접 추정하는 방식으로 개선했다. 비발생 구간에서도 확률을 감쇄(decay)시켜 오래된 정보를 자연스럽게 희석한다.
+```python
+# Stage 1: 수요 발생 여부 예측
+y_event = (y_demand > 0).astype(int)
 
-**현대적 접근: INARMA / DeepAR**
+clf = lgb.LGBMClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train, y_event_train)
 
-INARMA(Integer-valued ARMA)는 정수형 수요에 대한 확률 과정을 직접 모델링한다. Poisson 혼합 등 분포 가정을 명시하므로 예측 구간 도출이 자연스럽다. DeepAR(Salinas et al., 2020)은 LSTM 기반 확률적 예측 모델로, 음수 이항분포(Negative Binomial) 출력을 통해 간헐적 수요의 과산포를 처리한다.
+p_t = clf.predict_proba(X_test)[:, 1]   # 발생 확률
+```
 
-### 4-4. 평가 지표 선택
+평가 지표: Precision, Recall, F1 (RMSE 부적합)
 
-간헐적 수요에서 RMSE는 0이 많을 때 왜곡된다. 대안 지표:
+### 5.3 출고량 예측 (Stage 2: Conditional Regression)
 
-- **MASE (Mean Absolute Scaled Error)**: Naive 예측 대비 상대적 오차 — 스케일 불변
-- **CRPS (Continuous Ranked Probability Score)**: 확률 예측의 품질 평가
-- **서비스 수준**: 예측 기반 재고 정책에서 실제 충족률 (운영 지표와 직결)
+```
+입력: 수요 발생 시점의 피처
+출력: E[수요량 | 수요 발생]   — 조건부 기댓값
+```
 
-2단계 모형에서는 Stage 1의 Precision/Recall과 Stage 2의 조건부 MAE를 분리 평가하는 것이 진단에 유용하다. 이벤트 탐지와 출고량 추정의 오류를 구분해야 개선 방향이 명확해지기 때문이다.
+Stage 2는 **수요 발생 시점의 샘플만** 으로 학습한다. 0을 제외한 조건부 분포를 학습하므로 출고량 추정 정밀도가 높아진다.
+
+```python
+# Stage 2: 수요 발생 시점만 추출
+demand_mask  = y_demand > 0
+X_cond       = X_train[demand_mask]
+y_cond       = y_demand[demand_mask]   # 0 제외
+
+reg = GradientBoostingRegressor(n_estimators=100, random_state=42)
+reg.fit(X_cond, y_cond)
+
+q_t = reg.predict(X_test)   # 조건부 출고량
+
+# 최종 예측: 발생 확률 × 조건부 출고량
+y_pred = p_t * q_t
+```
+
+이 구조는 통계학의 Hurdle Model(두 단계로 분리)과 동일하다. 수요 발생 분포는 Bernoulli, 발생량 분포는 Log-normal 또는 Gamma로 가정하면 확률적 예측 구간도 도출할 수 있다.
+
+### 5.4 전통적 방법론 비교
+
+| 방법 | 특징 | 한계 |
+|------|------|------|
+| **Croston (1972)** | 수요량·간격을 각각 지수평활 | 편향 추정 (과대예측) |
+| **TSB (2011)** | 수요 확률을 직접 추정, 감쇄 적용 | 파라미터 민감도 |
+| **ADIDA** | 시간 집계 후 예측 → 분해 | 집계 단위 선택 어려움 |
+| **2단계 모형 (이번)** | 피처 기반, 비선형 관계 포착 | 학습 데이터 희소 가능 |
+| **DeepAR (Amazon)** | LSTM 기반 확률적 예측, 음이항분포 출력 | 학습 데이터 다량 필요 |
+
+### 5.5 평가 지표
+
+간헐적 수요에서 RMSE/MAPE는 0이 많을 때 왜곡된다.
+
+| 지표 | 설명 | 적합 이유 |
+|------|------|---------|
+| **MASE** | Naive 대비 상대 오차, 스케일 불변 | 0 포함 시계열에서 안정 |
+| **CRPS** | 확률 예측 품질 종합 평가 | 점 예측 + 불확실성 동시 |
+| Stage 1: F1 Score | 발생 탐지 정밀도 | 이벤트 탐지 분리 평가 |
+| Stage 2: 조건부 MAE | 발생 시점 출고량 오차 | 발생량 추정 분리 평가 |
+
+Stage 1과 Stage 2의 오류를 분리해 평가해야 개선 방향을 정확히 찾을 수 있다. 전체 예측 오류가 크다면 발생 탐지 문제인지(Stage 1) 출고량 추정 문제인지(Stage 2)에 따라 대응이 완전히 달라진다.
 
 ---
 
-## 종합 인사이트
+## 6. 결론
 
-이번 탐구에서 반복적으로 확인된 사실은 **데이터의 구조가 방법론의 선택을 강하게 제약한다**는 것이다. 니켈 가격처럼 비정상 I(1) 프로세스에 레짐 변화가 결합된 경우, 복잡한 모델은 학습 구간의 패턴을 기억할 뿐 테스트 구간에서 일반화하지 못한다.
+1. **수요예측 모델 리뷰**: I(1) 프로세스 + 레짐 변화 조합에서 복잡도 상승이 성능 하락으로 이어지는 패턴을 모든 실험에서 일관되게 확인했다. Naive Drift의 강점은 단순함이 아니라 단기 모멘텀이 가장 지배적인 신호라는 데이터 특성에서 비롯된다.
 
-OOF 스태킹의 가치는 성능 향상 그 자체보다, **메타 모델이 학습한 가중치가 각 모델의 신호 품질을 데이터 기반으로 정량화한다**는 점에 있다. 가중치 분포를 보면 어떤 모델이 이 데이터 환경에서 실질적으로 기여하는지 객관적으로 드러난다.
+2. **Residual 방식 vs OOF 방식**: Residual 방식(dl_lstm_transformer Stage 2)은 BASE 대비 24% 개선을 보였으나 Hybrid 기준선을 넘지 못했다. OOF 방식은 메타 모델이 Out-of-sample 예측을 학습해 과적합 편향이 없으며, Ridge 가중치가 각 모델의 실질적 기여도를 데이터 기반으로 정량화한다.
 
-PatchTST는 구조적으로 타당하지만, 학습 샘플 수(~600)와 DL 모델 복잡도 사이의 균형이 핵심 변수다. 이 점에서 논문의 원 실험 조건(수만 개 샘플)과 본 프로젝트 환경이 다르다는 점을 인식하고, 모델 크기를 의도적으로 축소(`d_model=32`)했다.
+3. **PatchTST**: 4주 단위 Patch 토큰화로 지역적 추세를 포착하고, Channel-Independence로 85개 피처를 독립 처리한다. 학습 샘플 ~600개에 맞게 모델 크기를 d_model=32로 조정했다.
 
-간헐적 패턴 모형은 니켈 가격 예측과는 다른 맥락이지만, 공통된 원리가 있다 — 단일 모델로 이질적인 현상을 동시에 포착하려 하지 말고, 현상의 발생 메커니즘에 따라 모델 구조를 분해하는 것이 더 해석 가능하고 강건하다.
+4. **간헐적 패턴**: 2단계 분리 모델링(이벤트 탐지 + 조건부 출고량)이 단일 회귀 대비 구조적으로 우월하다. Stage별 독립 평가(F1 + 조건부 MAE)가 개선 방향 진단의 핵심이다.
