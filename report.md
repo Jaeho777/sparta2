@@ -179,63 +179,48 @@ final_pred = base_pred_test + res_model.predict(X_res_test)
 
 ### 3.2 OOF (Out-of-Fold) 방식
 
-**방법론적 개선점**: 메타 모델이 학습하는 데이터가 Out-of-sample 예측이다.
+K-Fold 교차검증과 동일한 구조다. 학습 데이터를 K개 폴드로 나누어 K번 반복하되, 각 폴드에서 검증 구간은 해당 폴드의 학습에 사용되지 않은 모델이 예측한다. **최종 Test 예측은 K개 폴드 모델 예측의 평균**이다.
 
 ```
-for fold k in TimeSeriesSplit(K=5):
-    fold_train → [Naive Drift, GB, LGB, PatchTST] 독립 학습
-                  └── DL: fold_train에만 StandardScaler fit
-    fold_val   → OOF 예측 수집 (Out-of-sample 보장)
+oof_preds  = np.zeros(len(X_train))   # 학습셋 전체 OOF 예측
+test_preds = np.zeros(len(X_test))    # K개 모델 예측의 평균 (최종)
 
-Meta Model: Ridge([OOF_ND, OOF_GB, OOF_LGB, OOF_PTST]) → y_train
-
-Inference:
-    전체 Train으로 Base Models 재학습 → Meta Model 적용
+for fold, (tr_idx, val_idx) in enumerate(tscv.split(X_train)):
+    model.fit(X_train[tr_idx], y_train[tr_idx])
+    oof_preds[val_idx] = model.predict(X_train[val_idx])    # OOF 검증 예측
+    test_preds        += model.predict(X_test) / N_SPLITS    # 평균 누적 ★
 ```
 
-**OOF 정확성 보장 포인트 4가지**:
+`test_preds`가 단일 모델의 예측이 아닌 **K개 모델 예측의 평균**인 것이 핵심이다.
+이를 통해 특정 fold에서 학습된 모델의 편향이 분산되어 더 안정적인 예측을 얻는다.
 
-| 항목 | 구현 방법 |
-|------|---------|
-| 시간 방향 leakage | `TimeSeriesSplit` (과거→미래 방향 강제 고정) |
-| 스케일러 leakage | `StandardScaler`를 `fold_train`에만 `.fit()` |
-| 시퀀스 경계 | `n_tr_seqs = n_tr - SEQ_LEN` 으로 경계 수식 검증 |
-| Naive Drift 일관성 | OOF와 인퍼런스 모두 동일 공식 적용 |
+**시계열 적용 시 일반 KFold와의 차이**:
 
-**시퀀스 경계 수식 검증**:
+| 구분 | 일반 KFold | TimeSeriesSplit |
+|------|-----------|----------------|
+| fold 순서 | 랜덤 셔플 가능 | 과거→미래 고정 |
+| leakage | 발생 가능 | 없음 |
+| 학습셋 크기 | 균등 | 점진적 증가 |
 
-```
-X_seqs[k].target = y_combined[k + SEQ_LEN]
-
-fold_train 타겟: k + SEQ_LEN < n_tr  →  k < n_tr - SEQ_LEN
-fold_val   타겟: k + SEQ_LEN ≥ n_tr  →  k ≥ n_tr - SEQ_LEN
-
-따라서: n_tr_seqs = n_tr - SEQ_LEN  (경계)
-         n_val_seqs = n_val           (검증: 전체 - n_tr_seqs = n_val ✓)
-```
-
-구현:
+**구현 (oof_stacking.ipynb)**:
 
 ```python
-tscv = TimeSeriesSplit(n_splits=5)
+# GB / LGB OOF
+oof_gb[val_idx]  = gb.predict(X_fold_val)              # OOF
+val_gb          += gb.predict(X_val.values)  / N_SPLITS  # 평균 누적
+test_gb         += gb.predict(X_test.values) / N_SPLITS  # 평균 누적
 
-for fold, (tr_idx, val_idx) in enumerate(tscv.split(X_tr_arr)):
-    # Naive Drift OOF: 인퍼런스와 동일한 공식
-    last, drift = y_fold_tr[-1], y_fold_tr[-1] - y_fold_tr[-2]
-    oof_nd[val_idx] = [last + (k+1)*drift for k in range(n_val)]
+# PatchTST OOF: fold별 독립 스케일러 (leakage 차단)
+xs = StandardScaler().fit(X_fold_tr)   # fold_train에만 fit
+ys = StandardScaler().fit(y_fold_tr.reshape(-1, 1))
 
-    # GB, LGB OOF: 스케일링 불필요
-    oof_gb[val_idx]  = GradientBoostingRegressor(...).fit(X_fold_tr, y_fold_tr).predict(X_fold_val)
-    oof_lgb[val_idx] = LGBMRegressor(...).fit(X_fold_tr, y_fold_tr).predict(X_fold_val)
+# OOF: fold_train + fold_val 시퀀스 (n_tr_seqs = n_tr - SEQ_LEN 경계)
+n_tr_seqs         = n_tr - SEQ_LEN
+oof_ptst[val_idx] = ys.inverse_transform(model_oof(X_seqs_oof[n_tr_seqs:]))
 
-    # PatchTST OOF: fold별 독립 스케일러
-    xs = StandardScaler().fit(X_fold_tr)          # fold_train에만 fit
-    ys = StandardScaler().fit(y_fold_tr.reshape(-1,1))
-    X_comb_s = xs.transform(np.vstack([X_fold_tr, X_fold_val]))
-    y_comb_s = ys.transform(np.concatenate([y_fold_tr, y_fold_val]).reshape(-1,1)).ravel()
-
-    X_seqs, y_seqs = make_sequences(X_comb_s, y_comb_s, SEQ_LEN=26)
-    n_tr_seqs = n_tr - 26   # 경계 수식
+# Val/Test: fold_train 끝 SEQ_LEN개를 컨텍스트로 → 시퀀스 생성 → 평균 누적
+val_ptst  += all_pred[:N_VAL] / N_SPLITS
+test_ptst += all_pred[N_VAL:] / N_SPLITS
 
     model = PatchTST(N_VARS, seq_len=26, patch_len=4, stride=2, d_model=32)
     _train_patchtst(model, X_seqs[:n_tr_seqs], y_seqs[:n_tr_seqs], epochs=40)
@@ -252,13 +237,13 @@ meta   = Ridge(alpha=1.0).fit(X_meta, y_tr_arr[mask])
 
 | 구분 | Residual 방식 | OOF 방식 |
 |------|-------------|---------|
-| 메타 입력 | In-sample 잔차 | Out-of-sample 예측값 |
-| 과적합 위험 | 높음 (같은 데이터 재사용) | 낮음 (홀드아웃 예측) |
+| 보정 대상 | In-sample 잔차 (편향 위험) | Out-of-sample 예측 (K fold 평균) |
+| Test 최종 예측 | Base + Residual Model 합산 | K개 폴드 모델 예측의 평균 |
+| 과적합 위험 | 높음 (같은 데이터 재사용) | 낮음 (각 fold 홀드아웃 예측) |
 | 구현 복잡도 | 낮음 | 높음 (fold별 학습, 스케일러 분리) |
-| 메타 모델 해석 | 잔차의 패턴 | 각 모델의 앙상블 가중치 |
-| DL 적용 시 추가 고려 | 없음 | 시퀀스 경계, 스케일러 leakage |
+| DL 적용 시 추가 고려 | 없음 | 시퀀스 경계 수식, 스케일러 leakage |
 
-dl_lstm_transformer에서 Residual 방식이 BASE 대비 24% 개선(955.2→723.7)을 보였지만, Hybrid 기준선(406.80)은 여전히 넘지 못했다. OOF 방식은 메타 모델이 4개 Base Model의 Out-of-sample 신호를 통합하므로, 특히 Naive Drift의 강점을 데이터 기반으로 인식하고 적절한 가중치를 부여할 수 있다.
+dl_lstm_transformer에서 Residual 방식이 BASE 대비 24% 개선(955.2→723.7)을 보였지만, Hybrid 기준선(406.80)은 여전히 넘지 못했다. OOF 방식은 K개 폴드 모델의 예측을 평균하므로 특정 학습 구간의 편향이 분산된다. Naive Drift와의 최적 가중치는 Validation 기반 Grid Search로 결정한다.
 
 ---
 
