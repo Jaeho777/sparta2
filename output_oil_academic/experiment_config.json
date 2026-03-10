@@ -1,22 +1,49 @@
 {
-  "data_file": "data_weekly_260120.csv",
+  "framework": "Seasonal Decomposition + Residual Refinement",
   "target": "Com_BrentCrudeOil",
-  "val_start": "2025-08-04",
-  "test_start": "2025-10-27",
-  "n_splits": 5,
-  "gap": 1,
-  "seq_len": 16,
-  "d_model": 32,
-  "n_heads": 4,
-  "n_layers": 1,
-  "d_ff": 64,
-  "dropout": 0.5,
-  "patch_len": 4,
-  "stride": 2,
-  "epochs": 200,
-  "batch_size": 32,
-  "lr": 0.0001,
-  "patience": 30,
-  "weight_decay": 0.001,
-  "seed": 42
+  "data": {
+    "file": "data_weekly_260120.csv",
+    "n_observations": 668,
+    "n_features": 72,
+    "date_range": "2013-04-01 ~ 2026-01-12",
+    "frequency": "weekly (W-MON)"
+  },
+  "split": {
+    "train": "~ 2025-08-04 (644 weeks)",
+    "validation": "2025-08-04 ~ 2025-10-27 (12 weeks)",
+    "test": "2025-10-27 ~ end (12 weeks)"
+  },
+  "stage1_baseline": {
+    "method": "Exponential Smoothing (Holt-Winters, expanding window)",
+    "trend": "additive",
+    "seasonal": "additive",
+    "seasonal_periods": 52,
+    "external_vars": false,
+    "forecasting": "multi-step, re-fit at phase boundaries"
+  },
+  "stage2_residual": {
+    "method": "NLinear (Zeng et al., AAAI 2023)",
+    "seq_len": 12,
+    "pred_len": 1,
+    "d_hidden": 64,
+    "lr": 0.001,
+    "max_epochs": 300,
+    "patience": 40,
+    "batch_size": 32,
+    "external_vars": true,
+    "n_exog_features": 72
+  },
+  "stage3_ror": {
+    "method": "LightGBM with Expanding-Window OOF",
+    "n_folds": 5,
+    "external_vars": true
+  },
+  "no_leakage_protocol": [
+    "All features lagged by 1 week",
+    "STL fitted on training data only",
+    "ExpSmoothing re-fit at phase boundaries only",
+    "NLinear trained on training only",
+    "LightGBM OOF with expanding window",
+    "Scalers fitted on training only"
+  ]
 }
