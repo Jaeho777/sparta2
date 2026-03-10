@@ -1,0 +1,5 @@
+Stage,RMSE,vs_Persistence
+Stage 1: Persistence,1.1227449561973846,+0.0%
+Stage 2: + Tree OOF,1.1579179871754333,-3.1%
+Stage 3: + Transformer,1.1463395355228323,-2.1%
+Stage 4: + RoR(AR(1)),1.2069096058342932,-7.5%

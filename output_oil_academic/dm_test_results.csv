@@ -1,10 +1,6 @@
 A,B,DM,p,sig
-Naive (Random Walk),AR(1),0.8739088543424921,0.4008446449421109,
-Naive (Random Walk),EMA(4),-0.7417787975455149,0.47376200116043565,
-Naive (Random Walk),Stage 1: Tree OOF Ens.,-7.094570765121366,2.007214909426644e-05,***
-Stage 1: Tree OOF Ens.,Stage 2: Tree + Trans. Resid.,9.236866044798974,1.624523511508472e-06,***
-Stage 2: Tree + Trans. Resid.,Stage 3: RoR (Bias),5.840449128325493,0.00011244445048483084,***
-Stage 1: Tree OOF Ens.,Stage 3: RoR (Bias),9.081002747083103,1.920052823897594e-06,***
-Naive (Random Walk),Stage 3: RoR (Bias),-3.323077703534901,0.00679411774256745,***
-  └ PatchTST residual,  └ iTransformer residual,-2.9017740603442768,0.014399350354488355,**
-Naive (Random Walk),Ablation: Naive+PatchTST+RoR,-1.1061126232446166,0.2922818308013559,
+Persistence,Stage 2: Persist.+Tree OOF,-0.3256518945840153,0.7507984066535541,n.s.
+Stage 2: Persist.+Tree OOF,Stage 3: +Transformer,0.4072548810745715,0.6916337009022044,n.s.
+Stage 3: +Transformer,Stage 4: +RoR(AR(1)),-1.2972273679458637,0.2211002336239127,n.s.
+Persistence,Stage 4: +RoR(AR(1)),-0.7520857197135501,0.46778762858403145,n.s.
+  └ PatchTST only,  └ iTransformer only,0.9033665367664527,0.38568721897489466,n.s.
