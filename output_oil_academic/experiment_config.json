@@ -1,0 +1,22 @@
+{
+  "data_file": "data_weekly_260120.csv",
+  "target": "Com_BrentCrudeOil",
+  "val_start": "2025-08-04",
+  "test_start": "2025-10-27",
+  "n_splits": 5,
+  "gap": 1,
+  "seq_len": 24,
+  "d_model": 64,
+  "n_heads": 4,
+  "n_layers": 2,
+  "d_ff": 128,
+  "dropout": 0.3,
+  "patch_len": 4,
+  "stride": 2,
+  "epochs": 200,
+  "batch_size": 32,
+  "lr": 0.0005,
+  "patience": 25,
+  "weight_decay": 0.0001,
+  "seed": 42
+}
