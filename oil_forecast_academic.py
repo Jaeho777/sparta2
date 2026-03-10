@@ -54,7 +54,7 @@
   --------------------
   1. All external features X_t are lagged by 1 week
   2. STL decomposition fitted ONLY on training data
-  3. Exponential Smoothing re-fit at phase boundaries only
+  3. Exponential Smoothing single-fit on training, multi-step forecast
   4. NLinear trained ONLY on training data, validated on validation set
   5. LightGBM OOF uses expanding-window CV (no future data in any fold)
   6. Scalers fitted ONLY on training data
@@ -296,7 +296,7 @@ persist_test_pred = y_full.shift(1)[mask_test].values
 persist_val_rmse = np.sqrt(mean_squared_error(y_val, persist_val_pred))
 persist_test_rmse = np.sqrt(mean_squared_error(y_test, persist_test_pred))
 
-print(f"\n  Exponential Smoothing (damped trend, multi-step):")
+print(f"\n  Exponential Smoothing (additive trend + seasonal, single-fit multi-step):")
 print(f"    Val  RMSE: {baseline_val_rmse:.4f}  |  MAE: {baseline_val_mae:.4f}")
 print(f"    Test RMSE: {baseline_test_rmse:.4f}  |  MAE: {baseline_test_mae:.4f}")
 print(f"\n  Random Walk (benchmark):")
@@ -869,7 +869,7 @@ ax.axvline(pd.Timestamp(VAL_START), color="orange", ls="--",
            alpha=0.7, label="Val start")
 ax.axvline(pd.Timestamp(TEST_START), color="red", ls="--",
            alpha=0.7, label="Test start")
-ax.set_title("Stage 1: Exponential Smoothing Baseline (Expanding Window)")
+ax.set_title("Stage 1: Exponential Smoothing Baseline (Single-Fit, Multi-Step)")
 ax.set_ylabel("USD/barrel")
 ax.legend(fontsize=9)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
@@ -1046,12 +1046,12 @@ config = {
         "test": f"{TEST_START} ~ end ({n_test} weeks)",
     },
     "stage1_baseline": {
-        "method": "Exponential Smoothing (Holt-Winters, expanding window)",
+        "method": "Exponential Smoothing (Holt-Winters)",
         "trend": "additive",
         "seasonal": "additive",
         "seasonal_periods": 52,
         "external_vars": False,
-        "forecasting": "multi-step, re-fit at phase boundaries",
+        "forecasting": "single-fit on training, multi-step forecast for val+test",
     },
     "stage2_residual": {
         "method": "NLinear (Zeng et al., AAAI 2023)",
@@ -1073,7 +1073,7 @@ config = {
     "no_leakage_protocol": [
         "All features lagged by 1 week",
         "STL fitted on training data only",
-        "ExpSmoothing re-fit at phase boundaries only",
+        "ExpSmoothing single-fit on training, multi-step forecast",
         "NLinear trained on training only",
         "LightGBM OOF with expanding window",
         "Scalers fitted on training only",

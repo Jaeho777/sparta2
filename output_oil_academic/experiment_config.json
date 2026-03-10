@@ -14,12 +14,12 @@
     "test": "2025-10-27 ~ end (12 weeks)"
   },
   "stage1_baseline": {
-    "method": "Exponential Smoothing (Holt-Winters, expanding window)",
+    "method": "Exponential Smoothing (Holt-Winters)",
     "trend": "additive",
     "seasonal": "additive",
     "seasonal_periods": 52,
     "external_vars": false,
-    "forecasting": "multi-step, re-fit at phase boundaries"
+    "forecasting": "single-fit on training, multi-step forecast for val+test"
   },
   "stage2_residual": {
     "method": "NLinear (Zeng et al., AAAI 2023)",
@@ -41,7 +41,7 @@
   "no_leakage_protocol": [
     "All features lagged by 1 week",
     "STL fitted on training data only",
-    "ExpSmoothing re-fit at phase boundaries only",
+    "ExpSmoothing single-fit on training, multi-step forecast",
     "NLinear trained on training only",
     "LightGBM OOF with expanding window",
     "Scalers fitted on training only"
