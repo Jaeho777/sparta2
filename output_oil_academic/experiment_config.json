@@ -9,9 +9,9 @@
     "frequency": "weekly (W-MON)"
   },
   "split": {
-    "train": "~ 2025-08-04 (644 weeks)",
-    "validation": "2025-08-04 ~ 2025-10-27 (12 weeks)",
-    "test": "2025-10-27 ~ end (12 weeks)"
+    "train": "2013-04-01 ~ 2025-07-28 (644 weeks)",
+    "validation": "2025-08-04 ~ 2025-10-20 (12 weeks)",
+    "test": "2025-10-27 ~ 2026-01-12 (12 weeks)"
   },
   "stage1_baseline": {
     "method": "Exponential Smoothing (Holt-Winters)",
