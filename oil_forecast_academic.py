@@ -382,17 +382,33 @@ baseline_val_mae = mean_absolute_error(y_val, baseline_val_pred)
 baseline_test_mae = mean_absolute_error(y_test, baseline_test_pred)
 
 # Random Walk benchmark
-persist_val_pred = y_full.shift(1)[mask_val].values
-persist_test_pred = y_full.shift(1)[mask_test].values
-persist_val_rmse = np.sqrt(mean_squared_error(y_val, persist_val_pred))
-persist_test_rmse = np.sqrt(mean_squared_error(y_test, persist_test_pred))
+# Official comparison uses the same fixed-origin multi-step protocol as the
+# baseline/NLinear/LightGBM pipeline: validation forecasts originate at the end
+# of train, and test forecasts originate at the end of validation.
+rw_val_origin = y_train.iloc[-1]
+rw_test_origin = y_full[mask_val].iloc[-1]
+rw_val_pred = np.full(n_val, rw_val_origin, dtype=np.float64)
+rw_test_pred = np.full(n_test, rw_test_origin, dtype=np.float64)
+rw_val_rmse = np.sqrt(mean_squared_error(y_val, rw_val_pred))
+rw_test_rmse = np.sqrt(mean_squared_error(y_test, rw_test_pred))
+
+# Diagnostic only: walk-forward one-step persistence. This is kept to explain
+# why persistence can look unusually strong if actual test-period observations
+# are fed back every step, but it is NOT used for official model comparison.
+rw_roll_val_pred = y_full.shift(1)[mask_val].values
+rw_roll_test_pred = y_full.shift(1)[mask_test].values
+rw_roll_val_rmse = np.sqrt(mean_squared_error(y_val, rw_roll_val_pred))
+rw_roll_test_rmse = np.sqrt(mean_squared_error(y_test, rw_roll_test_pred))
 
 print(f"\n  Exponential Smoothing (additive trend + seasonal, single-fit multi-step):")
 print(f"    Val  RMSE: {baseline_val_rmse:.4f}  |  MAE: {baseline_val_mae:.4f}")
 print(f"    Test RMSE: {baseline_test_rmse:.4f}  |  MAE: {baseline_test_mae:.4f}")
-print(f"\n  Random Walk (benchmark):")
-print(f"    Val  RMSE: {persist_val_rmse:.4f}")
-print(f"    Test RMSE: {persist_test_rmse:.4f}")
+print(f"\n  Random Walk (official benchmark, fixed-origin multi-step):")
+print(f"    Val  RMSE: {rw_val_rmse:.4f}")
+print(f"    Test RMSE: {rw_test_rmse:.4f}")
+print(f"\n  Random Walk (diagnostic only, walk-forward one-step):")
+print(f"    Val  RMSE: {rw_roll_val_rmse:.4f}")
+print(f"    Test RMSE: {rw_roll_test_rmse:.4f}")
 
 # %%
 # ============================================================================
@@ -805,7 +821,7 @@ def compute_metrics(y_true, y_pred, label):
 
 # Test results
 results_test = [
-    compute_metrics(y_test.values, persist_test_pred, "Random Walk"),
+    compute_metrics(y_test.values, rw_test_pred, "Random Walk (fixed-origin)"),
     compute_metrics(y_test.values, baseline_test_pred, "ExpSmoothing (Baseline)"),
     compute_metrics(y_test.values, stage2_test_pred, "Baseline + NLinear"),
     compute_metrics(y_test.values, final_test_pred, "Full Framework (B+NL+RoR)"),
@@ -813,7 +829,7 @@ results_test = [
 
 # Validation results
 results_val = [
-    compute_metrics(y_val.values, persist_val_pred, "Random Walk"),
+    compute_metrics(y_val.values, rw_val_pred, "Random Walk (fixed-origin)"),
     compute_metrics(y_val.values, baseline_val_pred, "ExpSmoothing (Baseline)"),
     compute_metrics(y_val.values, stage2_val_pred, "Baseline + NLinear"),
     compute_metrics(y_val.values, final_val_pred, "Full Framework (B+NL+RoR)"),
@@ -840,6 +856,16 @@ print("  └──────────────────────�
 
 df_test.to_csv(f"{OUT_DIR}/results_table.csv", index=False)
 df_val.to_csv(f"{OUT_DIR}/results_val_table.csv", index=False)
+
+df_rw_protocol = pd.DataFrame({
+    "Benchmark": [
+        "Random Walk (fixed-origin, official)",
+        "Random Walk (walk-forward, diagnostic)",
+    ],
+    "Val_RMSE": [rw_val_rmse, rw_roll_val_rmse],
+    "Test_RMSE": [rw_test_rmse, rw_roll_test_rmse],
+})
+df_rw_protocol.to_csv(f"{OUT_DIR}/rw_protocol_comparison.csv", index=False)
 
 # %%
 # ============================================================================
@@ -875,7 +901,7 @@ def dm_test_harvey(e1, e2, h=1):
     p_value = 2 * sp_stats.t.sf(np.abs(dm_corrected), df=n - 1)
     return dm_corrected, p_value, d_bar
 
-e_rw = y_test.values - persist_test_pred
+e_rw = y_test.values - rw_test_pred
 e_bl = y_test.values - baseline_test_pred
 e_s2 = y_test.values - stage2_test_pred
 e_ff = y_test.values - final_test_pred
@@ -922,24 +948,24 @@ final_test_rmse = np.sqrt(mean_squared_error(y_test, final_test_pred))
 
 stage_data = pd.DataFrame({
     "Stage": [
-        "Random Walk (benchmark)",
+        "Random Walk (fixed-origin benchmark)",
         "Stage 1: ExpSmoothing (Baseline)",
         "Stage 2: + NLinear (Residual①)",
         "Stage 3: + LightGBM (RoR)",
     ],
     "Test_RMSE": [
-        persist_test_rmse, baseline_test_rmse,
+        rw_test_rmse, baseline_test_rmse,
         stage2_test_rmse, final_test_rmse,
     ],
     "Val_RMSE": [
-        persist_val_rmse, baseline_val_rmse,
+        rw_val_rmse, baseline_val_rmse,
         stage2_val_rmse,
         np.sqrt(mean_squared_error(y_val, final_val_pred)),
     ],
 })
 stage_data["Improvement_vs_RW(%)"] = (
-    (persist_test_rmse - stage_data["Test_RMSE"])
-    / persist_test_rmse * 100
+    (rw_test_rmse - stage_data["Test_RMSE"])
+    / rw_test_rmse * 100
 )
 
 print()
@@ -1017,8 +1043,8 @@ print("  04_ror_prediction.png saved")
 fig, ax = plt.subplots(figsize=(14, 6))
 ax.plot(y_test.index, y_test.values, "k-o", lw=2, ms=5,
         label="Actual", zorder=5)
-ax.plot(y_test.index, persist_test_pred, "gray", ls="--", lw=1,
-        label=f"Random Walk ({persist_test_rmse:.3f})")
+ax.plot(y_test.index, rw_test_pred, "gray", ls="--", lw=1,
+        label=f"Random Walk fixed-origin ({rw_test_rmse:.3f})")
 ax.plot(y_test.index, baseline_test_pred, "b--", lw=1.2,
         label=f"ExpSmoothing ({baseline_test_rmse:.3f})")
 ax.plot(y_test.index, stage2_test_pred, "orange", ls="-.", lw=1.2,
@@ -1047,7 +1073,7 @@ for i, bar in enumerate(bars):
             f"{v:.4f}", ha="center", va="bottom", fontsize=10,
             fontweight="bold")
 ax.set_xticks(list(x_pos))
-ax.set_xticklabels(["Random Walk", "ExpSmoothing", "+NLinear", "+RoR"],
+ax.set_xticklabels(["RW fixed-origin", "ExpSmoothing", "+NLinear", "+RoR"],
                     rotation=15, ha="right")
 ax.set_ylabel("Test RMSE (USD/barrel)")
 ax.set_title("Stage Progression: Test RMSE")
@@ -1181,6 +1207,13 @@ config = {
         "LightGBM OOF with expanding window",
         "Scalers fitted on training only",
     ],
+    "benchmark_protocol": {
+        "official_random_walk": "fixed-origin multi-step",
+        "official_rw_validation_origin": str(y_train.index[-1].date()),
+        "official_rw_test_origin": str(y_full[mask_val].index[-1].date()),
+        "diagnostic_random_walk": "walk-forward one-step (not used in main tables)",
+        "diagnostic_rw_test_rmse": float(rw_roll_test_rmse),
+    },
 }
 with open(f"{OUT_DIR}/experiment_config.json", "w") as f:
     json.dump(config, f, indent=2, default=str)
@@ -1193,7 +1226,7 @@ print("\n" + "=" * 72)
 print("  SUMMARY")
 print("=" * 72)
 
-improvement = (persist_test_rmse - final_test_rmse) / persist_test_rmse * 100
+improvement = (rw_test_rmse - final_test_rmse) / rw_test_rmse * 100
 
 print(f"""
   Framework: Seasonal Decomposition + Residual Refinement
@@ -1203,7 +1236,7 @@ print(f"""
     Stage 2: + NLinear (Residual①, with ext. vars)  Test RMSE = {stage2_test_rmse:.4f}
     Stage 3: + LightGBM (RoR, with ext. vars)       Test RMSE = {final_test_rmse:.4f}
 
-    Random Walk benchmark:                           Test RMSE = {persist_test_rmse:.4f}
+    Random Walk benchmark (fixed-origin):            Test RMSE = {rw_test_rmse:.4f}
     Improvement over Random Walk: {improvement:+.2f}%
 
   Output: {OUT_DIR}/
