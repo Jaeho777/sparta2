@@ -4,7 +4,7 @@
   "data": {
     "file": "data_weekly_260120.csv",
     "n_observations": 668,
-    "n_features": 72,
+    "n_features": 55,
     "date_range": "2013-04-01 ~ 2026-01-12",
     "frequency": "weekly (W-MON)"
   },
@@ -23,7 +23,7 @@
   },
   "stage2_residual": {
     "method": "NLinear (Zeng et al., AAAI 2023)",
-    "seq_len": 12,
+    "seq_len": 24,
     "pred_len": 1,
     "d_hidden": 64,
     "lr": 0.001,
@@ -31,7 +31,7 @@
     "patience": 40,
     "batch_size": 32,
     "external_vars": true,
-    "n_exog_features": 72
+    "n_exog_features": 55
   },
   "stage3_ror": {
     "method": "LightGBM with Expanding-Window OOF",

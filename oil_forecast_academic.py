@@ -176,14 +176,105 @@ y_train = y_full[mask_train]
 y_val = y_full[mask_val]
 y_test = y_full[mask_test]
 
-# --- Feature Selection ---
-EXCLUDE_COLS = [TARGET, "Com_CrudeOil"]  # Exclude target + near-collinear WTI
-feature_cols = [c for c in df.columns if c not in EXCLUDE_COLS]
-print(f"\n  Features: {len(feature_cols)} macro-financial indicators")
+# --- Feature Selection (Domain-Driven) ---
+# Economically motivated feature groups for crude oil price prediction
+FEATURE_GROUPS = {
+    "energy_chain": [          # 유가 밸류체인
+        "Com_Gasoline",        # 정제 제품 (crack spread)
+    ],
+    "substitutes": [           # 대체 에너지
+        "Com_NaturalGas",      # 천연가스
+        "Com_Uranium",         # 원자력
+        "Com_Coal",            # 석탄
+    ],
+    "macro_industry": [        # 경기/산업 선행지표
+        "Com_LME_Cu_Cash",     # Dr. Copper (경기 선행)
+        "Com_Steel",           # 산업활동
+        "Com_Iron_Ore",        # 산업활동
+    ],
+    "fx_dollar": [             # 달러/환율 (유가 역상관)
+        "Idx_DxyUSD",          # 달러 인덱스
+        "EX_USD_CNY",          # 위안화 (중국 = 최대 원유 수입국)
+    ],
+    "rates_bonds": [           # 금리/채권
+        "Bonds_US_10Y",        # 미국 장기금리
+        "Bonds_US_2Y",         # 미국 단기금리
+        "Bonds_US_3M",         # 미국 초단기금리
+    ],
+    "risk_safehaven": [        # 위험/안전자산
+        "Idx_SnPVIX",          # VIX (공포지수)
+        "Com_Gold",            # 안전자산
+    ],
+    "demand_proxy": [          # 수요 대리변수
+        "Idx_SnP500",          # 미국 경기
+        "Idx_CSI300",          # 중국 경기
+    ],
+    "asia_importers": [        # 아시아 주요 원유 수입국
+        "EX_USD_KRW",          # 한국 원화 (4위 수입국)
+        "Bonds_KOR_10Y",       # 한국 장기금리
+        "EX_USD_JPY",          # 일본 엔화 (3위 수입국)
+    ],
+    "biofuel_commodity": [     # 바이오연료/원자재 슈퍼사이클
+        "Com_Corn",            # 바이오에탄올 원료
+        "Com_Soybeans",        # 바이오디젤 원료
+        "Com_PalmOil",         # 바이오디젤 원료
+    ],
+}
+
+# Flatten selected raw features
+BASE_FEATURES = []
+for group, cols in FEATURE_GROUPS.items():
+    for c in cols:
+        if c in df.columns:
+            BASE_FEATURES.append(c)
+        else:
+            print(f"  WARNING: {c} not found in data, skipping")
+
+print(f"\n  Selected base features: {len(BASE_FEATURES)} (domain-driven)")
+for group, cols in FEATURE_GROUPS.items():
+    present = [c for c in cols if c in df.columns]
+    print(f"    {group}: {', '.join(present)}")
+
+# --- Derived Features (engineered) ---
+df_derived = pd.DataFrame(index=df.index)
+
+# 1) Weekly returns (pct_change) for key variables
+for col in BASE_FEATURES:
+    df_derived[f"{col}_ret"] = df[col].pct_change()
+
+# 2) Yield curve spread: 10Y - 2Y (recession indicator)
+df_derived["Spread_US_10Y_2Y"] = df["Bonds_US_10Y"] - df["Bonds_US_2Y"]
+
+# 3) Crack spread proxy: Gasoline - Brent (refining margin)
+df_derived["Spread_Crack"] = df["Com_Gasoline"] - df[TARGET]
+
+# 4) Gold/Oil ratio (risk sentiment)
+df_derived["Ratio_Gold_Oil"] = df["Com_Gold"] / df[TARGET]
+
+# 5) Moving average ratios (momentum signals, 4-week and 12-week)
+for col in ["Com_Gasoline", "Com_NaturalGas", "Idx_SnPVIX", "Idx_DxyUSD"]:
+    ma4 = df[col].rolling(4).mean()
+    ma12 = df[col].rolling(12).mean()
+    df_derived[f"{col}_ma4_ratio"] = df[col] / ma4 - 1  # deviation from MA4
+    df_derived[f"{col}_ma12_ratio"] = df[col] / ma12 - 1  # deviation from MA12
+
+# Combine: raw base features + derived features
+feature_cols = BASE_FEATURES + list(df_derived.columns)
+df_features = pd.concat([df[BASE_FEATURES], df_derived], axis=1)
+
+n_raw = len(BASE_FEATURES)
+n_derived = len(df_derived.columns)
+print(f"\n  Derived features: {n_derived}")
+print(f"    - Returns (pct_change): {n_raw} vars")
+print(f"    - Spread_US_10Y_2Y (yield curve)")
+print(f"    - Spread_Crack (refining margin)")
+print(f"    - Ratio_Gold_Oil (risk sentiment)")
+print(f"    - MA4/MA12 ratios: 4 key vars × 2 = 8")
+print(f"  Total features: {len(feature_cols)} ({n_raw} raw + {n_derived} derived)")
 
 # Lag all features by 1 week (prevent data leakage)
-X_lagged = df[feature_cols].shift(1)
-print("  All features lagged by 1 week (X_{t-1} → predict y_t)")
+X_lagged = df_features.shift(1)
+print(f"  All features lagged by 1 week (X_{{t-1}} → predict y_t)")
 
 # --- ADF Stationarity Test on target ---
 from statsmodels.tsa.stattools import adfuller
@@ -381,7 +472,7 @@ class ResidualDataset(Dataset):
 
 
 # --- Prepare data ---
-SEQ_LEN = 12
+SEQ_LEN = 24
 PRED_LEN = 1
 D_HIDDEN = 64
 LR = 1e-3
@@ -424,7 +515,7 @@ train_dataset = ResidualDataset(
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 # Train multiple seeds for robust ensemble
-N_SEEDS = 5
+N_SEEDS = 10
 all_models = []
 
 for seed_i in range(N_SEEDS):
@@ -493,10 +584,11 @@ for seed_i in range(N_SEEDS):
     print(f"    Seed {seed_i+1}/{N_SEEDS}: val RMSE={best_val_loss_i:.4f} "
           f"(stopped epoch {epoch+1})")
 
-# Sort by validation loss, use top 3
+# Sort by validation loss, use top 5
+TOP_K = 5
 all_models.sort(key=lambda x: x[1])
-top_models = [m for m, _ in all_models[:3]]
-print(f"\n    Using top 3 models (ensemble), best val RMSE: {all_models[0][1]:.4f}")
+top_models = [m for m, _ in all_models[:TOP_K]]
+print(f"\n    Using top {TOP_K} models (ensemble), best val RMSE: {all_models[0][1]:.4f}")
 
 # --- Generate ensemble predictions ---
 print("  Generating NLinear ensemble predictions...")
@@ -620,10 +712,10 @@ for fold in range(N_FOLDS):
 
     lgb_model = lgb.LGBMRegressor(
         objective="regression", metric="rmse",
-        learning_rate=0.03, num_leaves=15,
-        min_child_samples=30, subsample=0.7,
-        colsample_bytree=0.6, reg_alpha=1.0,
-        reg_lambda=1.0, n_estimators=500,
+        learning_rate=0.02, num_leaves=10,
+        min_child_samples=40, subsample=0.6,
+        colsample_bytree=0.5, reg_alpha=2.0,
+        reg_lambda=2.0, n_estimators=500,
         verbose=-1, random_state=SEED,
     )
     lgb_model.fit(
@@ -651,10 +743,10 @@ if oof_valid.sum() > 0:
 print(f"\n  Training final LightGBM on all RoR data...")
 final_lgb = lgb.LGBMRegressor(
     objective="regression", metric="rmse",
-    learning_rate=0.03, num_leaves=15,
-    min_child_samples=30, subsample=0.7,
-    colsample_bytree=0.6, reg_alpha=1.0,
-    reg_lambda=1.0, n_estimators=300,
+    learning_rate=0.02, num_leaves=10,
+    min_child_samples=40, subsample=0.6,
+    colsample_bytree=0.5, reg_alpha=2.0,
+    reg_lambda=2.0, n_estimators=300,
     verbose=-1, random_state=SEED,
 )
 final_lgb.fit(ror_X_train, ror_train_actual)
@@ -688,11 +780,22 @@ print("\n" + "=" * 72)
 print("  STAGE 6: Final Combination & Evaluation")
 print("=" * 72)
 
-# ŷ = Baseline + NLinear(Residual①) + LightGBM(RoR)
-# Direct additive combination — each stage corrects the previous.
-# No blending weights to avoid overfitting to the small validation set.
-final_val_pred = baseline_val_pred + nlinear_val_pred + ror_val_pred
-final_test_pred = baseline_test_pred + nlinear_test_pred + ror_test_pred
+# ŷ = Baseline + NLinear(Residual①) + λ·LightGBM(RoR)
+# λ is determined by validation: if RoR hurts validation, λ=0 (safety gate).
+# This prevents the RoR stage from adding noise when it cannot improve.
+stage2_val_rmse = np.sqrt(mean_squared_error(y_val.values, stage2_val_pred))
+stage3_val_cand = baseline_val_pred + nlinear_val_pred + ror_val_pred
+stage3_val_rmse = np.sqrt(mean_squared_error(y_val.values, stage3_val_cand))
+
+if stage3_val_rmse < stage2_val_rmse:
+    ror_lambda = 1.0
+    print(f"  RoR validation gate: PASS (val RMSE {stage2_val_rmse:.4f} → {stage3_val_rmse:.4f})")
+else:
+    ror_lambda = 0.0
+    print(f"  RoR validation gate: BLOCKED (val RMSE {stage2_val_rmse:.4f} → {stage3_val_rmse:.4f}, λ=0)")
+
+final_val_pred = baseline_val_pred + nlinear_val_pred + ror_lambda * ror_val_pred
+final_test_pred = baseline_test_pred + nlinear_test_pred + ror_lambda * ror_test_pred
 
 def compute_metrics(y_true, y_pred, label):
     rmse = np.sqrt(mean_squared_error(y_true, y_pred))
