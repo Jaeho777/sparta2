@@ -1,0 +1,9 @@
+family,model,mean_val_rmse,std_val_rmse,mean_test_rmse,std_test_rmse,n_windows
+benchmark,RandomWalk_1step,2.5866,0.8101,2.2191,0.9941,5
+stl,ExpSmoothing,2.7231,0.8517,2.3195,1.09,5
+stl,ExpSmoothing+NLinear,2.7116,0.8814,2.4743,1.0695,5
+stl,ExpSmoothing+NLinear+LightGBM,2.6116,0.8298,2.5089,0.8873,5
+baseline,Hybrid_NaiveDrift_GB,3.2192,1.0236,2.7912,1.2916,5
+transformer,PatchTST+iTransformer,2.4166,1.0302,3.8544,2.9055,5
+transformer,PatchTST+Transformer,2.5466,0.9864,4.7979,3.1178,5
+transformer,PatchTST+Transformer+ElasticNetRoR,2.5045,1.0183,4.899,3.0065,5

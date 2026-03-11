@@ -1,0 +1,41 @@
+window,family,model,val_rmse,test_rmse,extra
+2024-11-25,benchmark,RandomWalk_1step,2.9602588218747448,1.7651124901715671,y_hat_t = y_(t-1)
+2024-11-25,baseline,Hybrid_NaiveDrift_GB,3.9959769519953774,1.9216150683394422,validation-selected weight=0.70
+2024-11-25,transformer,PatchTST+Transformer,3.074951475845439,5.034501480023541,features=10 seeds=2 epochs=80
+2024-11-25,transformer,PatchTST+Transformer+ElasticNetRoR,3.074951475845439,5.034501480023541,alpha=0.01 l1=0.1 lambda=0.00 gate=off
+2024-11-25,transformer,PatchTST+iTransformer,2.7349585292958167,3.5260881168655818,features=10 seeds=2 epochs=80
+2024-11-25,stl,ExpSmoothing,3.071714076092801,1.6663776097344305,one-step expanding refit
+2024-11-25,stl,ExpSmoothing+NLinear,3.330477271383328,1.7436594447424207,topk=2 seeds=3
+2024-11-25,stl,ExpSmoothing+NLinear+LightGBM,3.0493861842129695,1.8644695309314316,gate=on
+2025-02-17,benchmark,RandomWalk_1step,1.7651124901715671,2.6933465135461807,y_hat_t = y_(t-1)
+2025-02-17,baseline,Hybrid_NaiveDrift_GB,2.0229200709709554,3.7210742085090125,validation-selected weight=0.70
+2025-02-17,transformer,PatchTST+Transformer,2.518458728726761,5.036541828327836,features=10 seeds=2 epochs=80
+2025-02-17,transformer,PatchTST+Transformer+ElasticNetRoR,2.518458728726761,5.036541828327836,alpha=0.01 l1=0.1 lambda=0.00 gate=off
+2025-02-17,transformer,PatchTST+iTransformer,1.8704251640517617,4.7299708553714925,features=10 seeds=2 epochs=80
+2025-02-17,stl,ExpSmoothing,1.6663776097344305,3.2275575073555336,one-step expanding refit
+2025-02-17,stl,ExpSmoothing+NLinear,1.5776304920743287,3.336142331280266,topk=2 seeds=3
+2025-02-17,stl,ExpSmoothing+NLinear+LightGBM,1.5776304920743287,3.336142331280266,gate=off
+2025-05-12,benchmark,RandomWalk_1step,2.6933465135461807,3.69026448041837,y_hat_t = y_(t-1)
+2025-05-12,baseline,Hybrid_NaiveDrift_GB,3.4298460500736394,4.48367579491978,validation-selected weight=0.70
+2025-05-12,transformer,PatchTST+Transformer,2.0275925731995983,9.71824561162366,features=10 seeds=2 epochs=80
+2025-05-12,transformer,PatchTST+Transformer+ElasticNetRoR,1.8183290183818615,9.701387308498228,alpha=0.01 l1=0.1 lambda=0.50 gate=on
+2025-05-12,transformer,PatchTST+iTransformer,2.0658843795516595,8.343197833114159,features=10 seeds=2 epochs=80
+2025-05-12,stl,ExpSmoothing,3.2275575073555336,3.658012456380498,one-step expanding refit
+2025-05-12,stl,ExpSmoothing+NLinear,2.9121480364690346,3.678449862281238,topk=2 seeds=3
+2025-05-12,stl,ExpSmoothing+NLinear+LightGBM,2.8109579551387345,3.482984994312009,gate=on
+2025-08-04,benchmark,RandomWalk_1step,3.69026448041837,1.8242538671734283,y_hat_t = y_(t-1)
+2025-08-04,baseline,Hybrid_NaiveDrift_GB,4.346160018518575,2.4857282616260363,validation-selected weight=0.70
+2025-08-04,transformer,PatchTST+Transformer,3.8487832774389927,2.0651182444529987,features=10 seeds=2 epochs=80
+2025-08-04,transformer,PatchTST+Transformer+ElasticNetRoR,3.8487832774389927,2.0651182444529987,alpha=0.01 l1=0.1 lambda=0.00 gate=off
+2025-08-04,transformer,PatchTST+iTransformer,4.0391623508179375,1.5137386945227762,features=10 seeds=2 epochs=80
+2025-08-04,stl,ExpSmoothing,3.658012456380498,1.991949784276148,one-step expanding refit
+2025-08-04,stl,ExpSmoothing+NLinear,3.6901545779828187,2.4981235399602877,topk=2 seeds=3
+2025-08-04,stl,ExpSmoothing+NLinear+LightGBM,3.6391971584967564,2.3950164187614154,gate=on
+2025-10-27,benchmark,RandomWalk_1step,1.8242538671734283,1.1227449561973846,y_hat_t = y_(t-1)
+2025-10-27,baseline,Hybrid_NaiveDrift_GB,2.301291231720948,1.343973576183037,validation-selected weight=0.70
+2025-10-27,transformer,PatchTST+Transformer,1.2632842062718075,2.1350065803842737,features=10 seeds=2 epochs=80
+2025-10-27,transformer,PatchTST+Transformer+ElasticNetRoR,1.2617949703929927,2.6575155655534437,alpha=0.01 l1=0.1 lambda=0.50 gate=on
+2025-10-27,transformer,PatchTST+iTransformer,1.3725636533668175,1.159113223343403,features=10 seeds=2 epochs=80
+2025-10-27,stl,ExpSmoothing,1.991949784276148,1.053573691638003,one-step expanding refit
+2025-10-27,stl,ExpSmoothing+NLinear,2.0475405711560266,1.1149642272218028,topk=2 seeds=3
+2025-10-27,stl,ExpSmoothing+NLinear+LightGBM,1.9810126580169818,1.4658294826877338,gate=on
