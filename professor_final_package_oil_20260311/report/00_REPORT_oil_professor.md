@@ -1,127 +1,116 @@
-# 유가 가격 예측 실험 보고서
+# 유가 예측 실험 보고서
 
-## 결론
-- 본 보고서의 모든 실험은 동일한 시계열 분할을 사용하였다. Train은 `2013-04-01`~`2025-07-28` 644주, Validation은 `2025-08-04`~`2025-10-20` 12주, Test는 `2025-10-27`~`2026-01-12` 12주이다.
-- 메인 브랜치의 니켈 예측 방식인 `Naive Drift + GradientBoosting Hybrid`를 유가에 그대로 적용한 결과, 최고 baseline은 `Hybrid_Naive0.7_GB0.3`였으며 test RMSE는 `1.3440`였다.
-- Advanced 파이프라인의 타깃 `y_t`는 `Com_BrentCrudeOil_t`이며, 입력 `X_t`는 22개 원변수와 33개 파생변수를 생성한 뒤 전부 `shift(1)`한 55개 후보 변수로 구성하였다. 따라서 예측 시점 `t`에서 `t-1`까지의 정보만 사용하였다.
-- Feature selection은 train 구간에서만 수행하였다. LightGBM SHAP importance와 `TimeSeriesCV(5-fold)`를 결합한 결과 최적 변수 수는 10개였고, 선정 변수는 `Spread_Crack, EX_USD_KRW, Com_Gasoline, Ratio_Gold_Oil, Com_Coal, Com_Gasoline_ma12r, Com_PalmOil, Idx_SnPVIX, Bonds_US_10Y, Bonds_US_3M_ret`였다.
-- Stage 1-Stage 2 조합은 일부 조합이 아니라 `5 x 5 = 25개` 전체를 screening하였다. 이후 screening 상위 8개 조합만 동일 분할에서 보다 큰 학습 예산으로 confirmatory rerun하였다.
-- 현재 selection rule에 따른 공식 채택 모델은 `PatchTST+Transformer + ElasticNet RoR`이다. 이 조합은 validation 기준 최종 RMSE `1.2443`로 1위를 기록하였다.
-- 반면 confirmatory stage에서 가장 낮은 holdout test RMSE는 `PatchTST+iTransformer`의 `1.2308`였다. 다만 해당 조합은 `Stage 2 validation top 3` 규칙 밖에 있었으므로, 본 보고서에서는 이를 `사후 holdout candidate`로만 해석하였다.
-- Residual과 RoR는 각각 1차 오차와 2차 오차에 예측 가능한 구조가 남아 있는지 확인하기 위한 보정 단계이다. 그러나 이번 결과는 이 보정이 항상 holdout 성능 향상으로 이어지지 않는다는 점도 함께 보여주었다.
+## 결론 요약
+- 본 보고서는 동일한 데이터 분할 위에서 세 개의 제출 파일이 각각 어떤 목적을 갖고 수행되었는지, 그리고 어떤 결과를 냈는지를 한 흐름으로 정리한 문서이다.
+- 기준 실험인 A 파일에서는 메인 브랜치의 니켈 예측 구조를 유가에 그대로 적용하였다. 이때 가장 좋은 모형은 `Hybrid_Naive0.7_GB0.3`이었고, 시험 RMSE는 `1.3440`이었다.
+- 심화 실험인 B 파일에서는 SHAP 기반 변수 선택, 시계열 교차검증, transformer 계열 조합 비교, 잔차 보정, 2차 잔차 보정을 단계적으로 수행하였다. 사전에 정한 검증 기준에 따라 최종 선정된 모형은 `PatchTST+Transformer + ElasticNet 기반 2차 잔차 보정`이며, 최종 검증 RMSE는 `1.2443`이었다.
+- 다만 B 파일에서 시험 구간 기준 가장 낮은 RMSE를 보인 조합은 `PatchTST+iTransformer`였고, 시험 RMSE는 `1.2308`이었다. 이 조합은 검증 기준 상위 3개에는 포함되지 않았으므로 최종 선정 모형으로 채택하지 않았다.
+- 방법론 보조 실험인 C 파일에서는 STL 분해 이후 baseline 예측, 잔차 보정, 2차 잔차 보정을 순차적으로 수행하였다. 이 파일에서는 `Baseline + NLinear`가 STL 기반 구조 중 가장 낮은 시험 RMSE `1.2608`을 기록하였다. 그러나 단순 비교 기준인 `Random Walk`의 시험 RMSE `1.1227`보다는 높았다.
+- 세 파일을 종합하면, 현재 자료와 분할에서는 B 파일의 `PatchTST+iTransformer`가 시험 구간에서 가장 낮은 오차를 보였고, A 파일의 니켈식 hybrid 기준 성능도 강한 비교 기준으로 작동하였다. 반면 C 파일의 STL 기반 구조는 방법론적으로 의미가 있으나, 최종 성능 기준으로는 우세하지 않았다.
 
-## 1. 실험 목적
-본 실험의 목적은 다음 두 가지를 검증하는 데 있다.
-1. 메인 브랜치의 니켈 예측 구조를 유가 데이터에 그대로 적용했을 때 확보되는 baseline 성능을 확인한다.
-2. SHAP 기반 변수 선택, 교차검증, 다양한 transformer 계열 조합, residual 및 RoR 보정을 체계적으로 결합했을 때 성능 향상이 재현 가능한지 평가한다.
+**표 1. 전체 성능 비교 요약**
+| 구분 | 파일 | 대표 모형 | 검증 RMSE | 시험 RMSE | 해석 |
+| --- | --- | --- | ---: | ---: | --- |
+| 기준 실험 | A 파일 | Hybrid_Naive0.7_GB0.3 | 2.3013 | 1.3440 | 메인 브랜치 니켈 예측 구조를 유가에 그대로 적용한 기준 성능 |
+| 심화 실험: 최종 선정 모형 | B 파일 | PatchTST+Transformer + ElasticNet 기반 2차 잔차 보정 | 1.2443 | 2.3577 | 사전에 정한 검증 기준에 따라 선정한 최종 모형 |
+| 심화 실험: 시험 구간 최저 오차 | B 파일 | PatchTST+iTransformer | 1.3534 | 1.2308 | 시험 구간에서 가장 낮은 오차를 기록한 조합 |
+| STL 보조 실험 | C 파일 | Baseline + NLinear | 3.1601 | 1.2608 | STL 기반 구조 안에서 가장 낮은 시험 오차 |
+| STL 보조 실험 비교 기준 | C 파일 | Random Walk | 1.8243 | 1.1227 | C 파일 내부 비교 기준 중 가장 낮은 시험 오차 |
 
-## 2. 데이터와 분할
-### 2.1 데이터 개요
-- 파일: `data_weekly_260120.csv`
-- 기간: 2013-04-01 ~ 2026-01-12
-- 빈도: 주간(월요일 기준)
+## 1. 서론
+본 실험의 목적은 두 가지이다.
+1. 메인 브랜치에서 사용한 니켈 가격 예측 구조가 유가 자료에도 유효한 기준 성능을 제공하는지 확인한다.
+2. 변수 선택, 시계열 교차검증, transformer 계열 조합, 잔차 보정, STL 분해 등 여러 접근이 유가 예측 성능을 실제로 향상시키는지 비교하고, 각각의 장단점을 정리한다.
+
+이를 위해 본 프로젝트는 역할이 분명히 다른 세 개의 제출 파일로 구성하였다. A 파일은 기준 성능을 확인하는 재현 실험, B 파일은 가장 적극적인 심화 실험, C 파일은 STL 기반의 방법론 보조 실험이다.
+
+## 2. 제출 파일 구성과 의도
+**표 2. 제출 파일과 역할**
+| 구분 | 파일명 | 의도 |
+| --- | --- | --- |
+| A 파일 | `01_oil_nickel_style_hybrid.ipynb` | 메인 브랜치의 니켈 예측 구조를 유가에 그대로 적용하여 기준 성능을 확보한다. |
+| B 파일 | `02_oil_transformer_advanced.ipynb` | SHAP 기반 변수 선택, 25개 조합 비교, 상위 조합 재평가, 잔차 보정과 2차 잔차 보정을 결합하여 가장 발전된 실험을 수행한다. |
+| C 파일 | `03_oil_stl_residual_ror.ipynb` | STL 분해 이후 baseline 예측, 잔차 보정, 2차 잔차 보정을 순차적으로 수행하여 구조적 분해 접근의 타당성을 점검한다. |
+
+세 파일은 모두 같은 예측 대상 변수와 같은 시계열 분할을 사용한다. 따라서 성능 차이는 데이터 분할 차이가 아니라 모형 구조 차이에서 발생한 것으로 해석할 수 있다.
+
+## 3. 공통 데이터 설정
+### 3.1 데이터 개요
+- 파일명: `data_weekly_260120.csv`
+- 관측 주기: 주간
+- 전체 기간: `2013-04-01` ~ `2026-01-12`
 - 총 관측치: 668주
-- 타깃 변수: `Com_BrentCrudeOil`
+- 예측 대상 변수: `Com_BrentCrudeOil`
 
-### 2.2 입력과 타깃의 정의
-- 타깃 `y_t`: 시점 `t`의 Brent 유가 `Com_BrentCrudeOil`
-- 입력 `X_t`: 원변수 22개와 파생변수 33개를 생성한 뒤 `shift(1)`을 적용한 값
-- 파생변수: 수익률(`*_ret`), 금리 스프레드(`Spread_10Y_2Y`), 크랙 스프레드(`Spread_Crack`), 금/유 비율(`Ratio_Gold_Oil`), 이동평균 비율(`*_ma4r`, `*_ma12r`)
+### 3.2 예측 대상 변수와 설명변수
+- 예측 대상 변수 `y_t`: 시점 `t`의 Brent 유가 `Com_BrentCrudeOil_t`
+- 설명변수 `X_t`: 원변수 22개와 파생변수 33개를 생성한 뒤, 모두 1주 시차를 적용한 값
+- 파생변수 유형: 수익률(`*_ret`), 이동평균 비율(`*_ma4r`, `*_ma12r`), 금리 스프레드(`Spread_10Y_2Y`), 정제마진 스프레드(`Spread_Crack`), 금/유 비율(`Ratio_Gold_Oil`) 등
 
-### 2.3 Train / Validation / Test 설정
+모든 설명변수에 1주 시차를 적용한 이유는 예측 시점의 동시점 정보를 사용하지 않기 위해서이다. 따라서 본 보고서의 모든 모형은 시점 `t`를 예측할 때 시점 `t-1`까지의 정보만 사용한다.
 
-**표 1. Train, Validation, Test 기간과 용도**
-| Split | Target 기간 | 샘플 수 | 용도 |
+### 3.3 학습, 검증, 시험 구간
+**표 3. 학습, 검증, 시험 구간과 용도**
+| 구간 | 기간 | 샘플 수 | 용도 |
 | --- | --- | ---: | --- |
-| Train | 2013-04-01 ~ 2025-07-28 | 644 | 모델 학습, SHAP, 변수 수 선택 |
-| Validation | 2025-08-04 ~ 2025-10-20 | 12 | 조합 선택, lambda 선택, top 3 선정 |
-| Test | 2025-10-27 ~ 2026-01-12 | 12 | 최종 holdout 평가 |
+| 학습 | 2013-04-01 ~ 2025-07-28 | 644 | 모형 학습, 변수 중요도 계산, 변수 수 선택 |
+| 검증 | 2025-08-04 ~ 2025-10-20 | 12 | 모형 조합 비교, 가중치 선택, 추가 보정 채택 여부 판단 |
+| 시험 | 2025-10-27 ~ 2026-01-12 | 12 | 최종 성능 평가 |
 
-### 2.4 Sequence 입력 구성
-Advanced 모델은 24주 시퀀스를 사용하였다.
-- Validation target을 만들 때는 train 마지막 24주(`2025-02-17`~`2025-07-28`)를 입력 buffer로만 사용하였다.
-- Test target을 만들 때는 train+validation 마지막 24주(`2025-05-12`~`2025-10-20`)를 입력 buffer로만 사용하였다.
-- 따라서 validation/test의 입력은 직전 24주의 과거 정보만 참조하며, 평가 target 자체는 train과 중복되지 않는다.
+### 3.4 공통 누수 방지 원칙
+- 모든 설명변수는 생성 후 1주 시차를 적용하였다.
+- SHAP 중요도 계산과 변수 수 선택은 학습 구간에서만 수행하였다.
+- 표준화에 필요한 평균과 표준편차는 학습 구간에서만 계산하였다.
+- 시퀀스 모형은 직전 24주 문맥만 사용하였고, 예측 대상 시점과 겹치지 않도록 구성하였다.
+- 시험 구간은 최종 성능 확인 외의 용도로 사용하지 않았다.
 
-### 2.5 실험 구조 도식
+## 4. A 파일: 니켈 예측 구조를 그대로 적용한 기준 실험
+### 4.1 파일의 목적
+A 파일의 목적은 가장 단순하고 분명하다. 메인 브랜치의 니켈 예측 구조를 유가 자료에 그대로 적용하여, 이후 심화 실험과 비교할 기준 성능을 확보하는 것이다. 이 기준선이 있어야 이후의 복잡한 실험이 실제로 의미 있는 개선인지 판단할 수 있다.
 
-**그림 1. 전체 실험 절차**
-```text
-원자료(주간 패널)
-  -> 타깃 y = Brent 유가
-  -> 원변수 + 파생변수 생성
-  -> 모든 X에 shift(1) 적용
-  -> Train-only SHAP ranking
-  -> TimeSeriesCV로 변수 수 선택
-  -> 25개 조합 screening
-  -> 상위 8개 confirmatory rerun
-  -> Validation top 3만 RoR 적용
-  -> 최종 holdout 평가
-```
+### 4.2 사용한 모형과 설정
+A 파일에서는 Naive Drift 예측과 `GradientBoostingRegressor` 예측을 가중 평균하였다.
+- `GradientBoostingRegressor` 파라미터: `n_estimators=500`, `learning_rate=0.05`, `max_depth=3`
+- 비교한 가중치: `0.7/0.3`, `0.8/0.2`, `0.9/0.1`
+- 결측치는 학습 구간 기준 중앙값으로 보정하였다.
 
-설명: 변수 선택, 조합 선택, RoR 채택 여부 결정은 모두 train 또는 validation 정보만으로 수행되며, test는 최종 holdout 평가에만 사용된다.
+이 구조는 단순 추세 추종 성분과 비선형 보정 성분을 함께 사용하는 방식이다. 유가 자료처럼 추세와 단기 변동이 함께 존재하는 자료에서는, 순수 기계학습 모형 하나보다 이와 같은 혼합 구조가 더 안정적인 성능을 보일 가능성이 있다.
 
-**그림 2. Residual 및 RoR 보정 구조**
-```text
-Stage 1 Base Model
-  -> yhat_base
-  -> Residual target r_t = y_t - yhat_base,t
-  -> Stage 2 Residual Model
-  -> yhat_stage2 = yhat_base + rhat_t
-  -> RoR target q_t = r_t - rhat_t
-  -> RoR Model
-  -> yhat_final = yhat_stage2 + lambda * qhat_t
-```
-
-설명: Residual 단계는 1차 오차의 예측 가능성을 검토하고, RoR 단계는 residual model이 남긴 2차 오차의 예측 가능성을 추가로 검토한다.
-
-**그림 3. 공식 채택 모델과 사후 holdout candidate의 구분**
-```text
-Validation ranking
-  -> 공식 채택 모델 선정
-
-Test ranking
-  -> 사후 holdout candidate 해석
-
-주의:
-  test 성능은 해석용이지 선택용이 아님
-```
-
-설명: 본 보고서는 validation 기준 공식 채택 모델과, 사후적으로 holdout test가 가장 낮게 나온 조합을 명시적으로 구분하여 서술한다.
-
-## 3. Baseline 재현: 니켈 메인 방식의 유가 적용
-### 3.1 방법
-- Naive Drift와 GradientBoostingRegressor를 가중 평균하여 hybrid를 구성하였다.
-- GradientBoostingRegressor 파라미터는 `n_estimators=500`, `learning_rate=0.05`, `max_depth=3`으로 고정하였다.
-- Hybrid 가중치는 `0.7/0.3`, `0.8/0.2`, `0.9/0.1`을 비교하였다.
-- 모든 입력 변수에는 `shift(1)`을 적용하였고, 결측은 train fit 기반 median imputation으로 처리하였다.
-
-### 3.2 결과
-
-**표 2. 니켈 메인 방식 baseline 성능 비교**
-| Model | Validation_RMSE | RMSE | MAE | MAPE(%) |
-| --- | --- | --- | --- | --- |
+### 4.3 결과
+**표 4. A 파일 성능 비교**
+| 모형 | 검증 RMSE | 시험 RMSE | 시험 MAE | 시험 MAPE(%) |
+| --- | ---: | ---: | ---: | ---: |
 | Naive_Drift |  | 1.5125 | 1.2740 | 2.0383 |
 | GradientBoosting |  | 2.4451 | 2.1321 | 3.4385 |
 | Hybrid_Naive0.7_GB0.3 | 2.3013 | 1.3440 | 1.1317 | 1.8162 |
 | Hybrid_Naive0.8_GB0.2 | 2.4552 | 1.3474 | 1.1522 | 1.8476 |
 | Hybrid_Naive0.9_GB0.1 | 2.6261 | 1.4056 | 1.2056 | 1.9305 |
 
-해석: `Hybrid_Naive0.7_GB0.3`가 동일 분할에서 test RMSE `1.3440`로 가장 우수한 baseline이었다. 이후의 모든 advanced 결과는 이 기준선과 함께 해석하는 것이 타당하다.
+### 4.4 해석
+- 가장 좋은 기준 모형은 `Hybrid_Naive0.7_GB0.3`이었다.
+- 단순 `Naive_Drift`보다 오차가 낮았고, `GradientBoosting` 단독보다도 훨씬 안정적이었다.
+- 따라서 A 파일은 "복잡한 모형 없이도 상당히 강한 기준 성능을 얻을 수 있다"는 점을 보여준다.
+- 이후 B 파일과 C 파일의 결과는 이 기준 성능 `1.3440`보다 실제로 낮은 시험 오차를 내는지 여부를 함께 확인해야 한다.
 
-## 4. Feature selection: SHAP + TimeSeriesCV
-### 4.1 절차
-1. Train 구간의 lagged candidate 55개를 구성하였다.
-2. LightGBM(`n_estimators=300`, `learning_rate=0.05`, `num_leaves=31`)을 train에만 적합하였다.
-3. Train SHAP mean absolute value로 변수를 정렬하였다.
-4. 상위 `10/15/20/25/30/40/55`개 변수 조합에 대해 `TimeSeriesCV(5-fold)` 평균 RMSE를 계산하였다.
-5. 평균 RMSE가 가장 낮은 변수 개수를 최종 채택하였다.
+## 5. B 파일: 변수 선택과 transformer 조합을 결합한 심화 실험
+### 5.1 파일의 목적
+B 파일의 목적은 가장 발전된 예측 실험을 수행하는 것이다. 구체적으로는 다음 네 단계를 결합하였다.
+1. SHAP과 시계열 교차검증으로 설명변수를 줄인다.
+2. 기본 예측 모형과 잔차 보정 모형의 조합을 폭넓게 비교한다.
+3. 상위 조합을 더 큰 학습 예산으로 다시 평가한다.
+4. 가장 유망한 조합에 2차 잔차 보정을 적용한다.
 
-### 4.2 CV 결과
+### 5.2 변수 선택
+변수 선택은 학습 구간에서만 수행하였다.
+1. 55개 후보 설명변수를 구성하였다.
+2. LightGBM(`n_estimators=300`, `learning_rate=0.05`, `num_leaves=31`)을 학습 구간에 적합하였다.
+3. SHAP 절대값 평균으로 변수 중요도를 계산하였다.
+4. 상위 `10`, `15`, `20`, `25`, `30`, `40`, `55`개 변수를 각각 사용하여 5분할 시계열 교차검증 RMSE를 계산하였다.
+5. 평균 RMSE가 가장 낮은 변수 수를 최종 변수 수로 채택하였다.
 
-**표 3. Feature 수별 TimeSeriesCV 결과**
-| n_features | cv_rmse |
-| --- | --- |
+**표 5. B 파일의 변수 수 선택 결과**
+| 변수 수 | 평균 RMSE |
+| --- | ---: |
 | 10 | 7.4507 |
 | 15 | 7.8164 |
 | 20 | 8.3217 |
@@ -130,11 +119,9 @@ Test ranking
 | 40 | 10.1836 |
 | 55 | 10.2080 |
 
-### 4.3 최종 선정 변수
-
-**표 4. SHAP 기준 최종 선정 변수 10개**
-| feature | mean_abs_shap |
-| --- | --- |
+**표 6. B 파일의 최종 선정 변수 10개**
+| 변수명 | 평균 절대 SHAP |
+| --- | ---: |
 | Spread_Crack | 15.7882 |
 | EX_USD_KRW | 0.7411 |
 | Com_Gasoline | 0.5219 |
@@ -146,41 +133,50 @@ Test ranking
 | Bonds_US_10Y | 0.1718 |
 | Bonds_US_3M_ret | 0.1548 |
 
-해석: 변수 수가 10개를 초과하면 CV RMSE가 일관되게 악화되었다. 본 데이터에서는 많은 변수를 사용하는 것보다, train 구간에서 안정적으로 설명력을 보인 소수 변수 집합이 더 적절하였다.
+해석: 많은 변수를 그대로 사용하는 것보다, 학습 구간에서 설명력이 높은 소수 변수만 선택하는 편이 교차검증 오차가 더 낮았다.
 
-## 5. Advanced 파이프라인과 선정 규칙
-### 5.1 후보 모델
-
-**표 5. Advanced 파이프라인 후보 모델과 핵심 파라미터**
-| 모델 | 설명 | 핵심 파라미터 |
+### 5.3 사용한 후보 모형
+**표 7. B 파일 후보 모형과 설명**
+| 모형 | 설명 | 핵심 파라미터 |
 | --- | --- | --- |
-| `NLinear` | 시간축 선형 패턴과 마지막 시점 feature를 함께 사용하는 간결한 모델 | hidden 64, dropout 0.3 |
-| `PatchTST` | 시퀀스를 patch로 나누어 transformer encoder로 처리하는 구조 | d_model 64, heads 4, layers 2, patch_len 4, stride 2 |
-| `iTransformer` | 변수 축을 token처럼 다루어 cross-feature 상호작용을 학습하는 구조 | d_model 64, heads 4, layers 2 |
-| `Transformer` | 시간축 self-attention encoder | d_model 64, heads 4, layers 2 |
-| `LSTM` | Recurrent hidden state로 순차 정보를 누적하는 모델 | hidden 64, layers 2 |
+| `NLinear` | 최근 시계열의 선형 구조를 간결하게 학습하는 모형 | hidden 64, dropout 0.3 |
+| `PatchTST` | 시계열을 짧은 구간으로 나누어 지역 패턴과 시간 의존성을 함께 학습하는 transformer 계열 모형 | d_model 64, heads 4, layers 2, patch_len 4, stride 2 |
+| `iTransformer` | 설명변수 간 상호작용을 강조하여 다변량 관계를 학습하는 transformer 계열 모형 | d_model 64, heads 4, layers 2 |
+| `Transformer` | 자기주의 메커니즘으로 시간 의존성을 학습하는 기본 transformer encoder | d_model 64, heads 4, layers 2 |
+| `LSTM` | 순환 구조를 통해 누적된 과거 정보를 반영하는 recurrent 모형 | hidden 64, layers 2 |
 
-### 5.2 공통 학습 설정
-- optimizer: `Adam(lr=1e-3, weight_decay=1e-5)`
-- scheduler: `ReduceLROnPlateau(patience=8, factor=0.5)`
-- batch size: `32`
-- gradient clipping: `1.0`
-- target은 train 평균/표준편차로 정규화하였다.
+### 5.4 잔차 보정과 2차 잔차 보정
+B 파일에서 `PatchTST+Transformer`와 같은 표기는 다음을 뜻한다.
+- 앞의 모형: 1단계 기본 예측 모형
+- 뒤의 모형: 1단계 예측이 남긴 잔차를 보정하는 2단계 모형
 
-### 5.3 Selection rule
-- 1차 screening: 25개 조합 전체, `seeds=1`, `epochs=60`, `patience=12`
-- 2차 confirmatory rerun: screening 상위 8개, `seeds=3`, `epochs=120`, `patience=20`
-- 공식 top 3 선정 기준: confirmatory `S2_Val_RMSE`
-- RoR 적용 범위: `Stage 2 validation top 3` 조합에 한정
+1단계 기본 예측에서 표준화된 유가 예측값을 `\hat{z}^{(1)}_t`라고 두면, 1차 잔차는 다음과 같다.
 
-이 규칙에 따라 `PatchTST+iTransformer`는 test에서 가장 낮은 RMSE를 기록했더라도, S2 validation 순위가 5위였으므로 RoR 단계 대상이 아니었다.
+\[
+e_t = z_t - \hat{z}^{(1)}_t
+\]
 
-## 6. 조합 실험 결과
-### 6.1 Screening 결과
+2단계 모형은 이 `e_t`를 예측하여 `\hat{e}_t`를 만들고, 2단계 예측은 다음과 같다.
 
-**표 6. 25개 조합 screening 결과**
-| Experiment | S2_Val_RMSE | S2_Test_RMSE | Seeds | Epochs |
-| --- | --- | --- | --- | --- |
+\[
+\hat{z}^{(2)}_t = \hat{z}^{(1)}_t + \hat{e}_t
+\]
+
+그 이후에도 남는 오차를 2차 잔차 `u_t = e_t - \hat{e}_t`라고 두고, 추가 모형으로 `\hat{u}_t`를 예측하여 최종 예측에 일부 반영하였다.
+
+\[
+\hat{z}^{(3)}_t = \hat{z}^{(2)}_t + \lambda \hat{u}_t
+\]
+
+이 과정의 목적은 기본 예측이 놓친 체계적 오차가 남아 있는지를 단계적으로 점검하는 데 있다. 즉, 단순히 값을 임의로 더하는 것이 아니라, 예측 오차 자체에 반복적인 구조가 있는지를 추가로 확인하는 절차이다.
+
+### 5.5 OOF 적용 방식
+B 파일에서는 2차 잔차 보정 후보 중 하나로 OOF(out-of-fold) 방식을 사용하였다. 학습 구간 안에서 expanding window 방식으로 내부 분할을 만든 뒤, 각 분할에서 과거 구간만 사용해 모형을 적합하고 해당 분할의 2차 잔차 예측값을 생성하였다. 이 방식은 2차 잔차 모형이 학습 표본에 과도하게 맞춰지는 위험을 줄이기 위한 장치이다.
+
+### 5.6 1차 비교: 25개 조합
+**표 8. B 파일의 25개 조합 1차 비교 결과**
+| 조합 | 검증 RMSE | 시험 RMSE | 시드 수 | epoch |
+| --- | ---: | ---: | ---: | ---: |
 | Transformer+iTransformer | 1.1475 | 1.7200 | 1 | 60 |
 | LSTM+PatchTST | 1.2821 | 1.3509 | 1 | 60 |
 | PatchTST+iTransformer | 1.2848 | 1.7348 | 1 | 60 |
@@ -207,13 +203,12 @@ Test ranking
 | iTransformer+LSTM | 4.2452 | 5.0900 | 1 | 60 |
 | iTransformer+NLinear | 4.6643 | 6.4417 | 1 | 60 |
 
-해석: Screening 단계의 validation 순위는 confirmatory rerun에서 일부 변동되었다. 따라서 screening 결과만으로 최종 결론을 내리는 것은 적절하지 않다.
+해석: 1차 비교는 계산 예산을 줄인 탐색 단계이다. 따라서 여기서 좋은 조합이 반드시 최종 조합이 되는 것은 아니며, 실제로 일부 조합은 재평가 후 순위가 바뀌었다.
 
-### 6.2 Confirmatory 상위 8개
-
-**표 7. Confirmatory rerun 상위 8개 결과**
-| Experiment | Base_Val_RMSE | Base_Test_RMSE | S2_Val_RMSE | S2_Test_RMSE |
-| --- | --- | --- | --- | --- |
+### 5.7 2차 재평가: 상위 8개 조합
+**표 9. B 파일의 상위 8개 조합 재평가 결과**
+| 조합 | 1단계 검증 RMSE | 1단계 시험 RMSE | 2단계 검증 RMSE | 2단계 시험 RMSE |
+| --- | ---: | ---: | ---: | ---: |
 | PatchTST+Transformer | 1.5235 | 1.5339 | 1.2580 | 2.2752 |
 | PatchTST+LSTM | 1.5235 | 1.5339 | 1.2839 | 2.7910 |
 | LSTM+PatchTST | 1.8687 | 1.2776 | 1.2870 | 1.7378 |
@@ -223,83 +218,85 @@ Test ranking
 | PatchTST+PatchTST | 1.5235 | 1.5339 | 1.4880 | 1.5401 |
 | Transformer+Transformer | 1.3204 | 1.5563 | 1.4914 | 1.4453 |
 
-### 6.3 Confirmatory stage의 test 순위
+### 5.8 상위 3개 조합의 2차 잔차 보정 결과
+**표 10. B 파일의 최종 후보 3개 결과**
+| 조합 | 2단계 검증 RMSE | 2단계 시험 RMSE | 2차 잔차 보정 모형 | 최종 검증 RMSE | 최종 시험 RMSE |
+| --- | ---: | ---: | --- | ---: | ---: |
+| PatchTST+Transformer | 1.2580 | 2.2752 | ElasticNet(`alpha=0.01`, `l1_ratio=0.10`, `lambda=0.50`) | 1.2443 | 2.3577 |
+| LSTM+PatchTST | 1.2870 | 1.7378 | LightGBM(전체 변수 사용, `lambda=0.50`) | 1.2524 | 1.5402 |
+| PatchTST+LSTM | 1.2839 | 2.7910 | LightGBM(전체 변수 사용, `lambda=0.50`) | 1.2789 | 2.7255 |
 
-**표 8. Confirmatory stage의 holdout test 순위**
-| Experiment | S2_Val_RMSE | S2_Test_RMSE |
-| --- | --- | --- |
-| PatchTST+iTransformer | 1.3534 | 1.2308 |
-| Transformer+Transformer | 1.4914 | 1.4453 |
-| Transformer+iTransformer | 1.4456 | 1.4526 |
-| PatchTST+PatchTST | 1.4880 | 1.5401 |
-| Transformer+PatchTST | 1.2922 | 1.5927 |
-| LSTM+PatchTST | 1.2870 | 1.7378 |
-| PatchTST+Transformer | 1.2580 | 2.2752 |
-| PatchTST+LSTM | 1.2839 | 2.7910 |
+### 5.9 B 파일 결과 해석
+1. `PatchTST+Transformer`
+   - 검증 구간에서는 가장 낮은 RMSE를 보였기 때문에 사전에 정한 기준에 따라 최종 선정 모형이 되었다.
+   - 그러나 시험 구간에서는 오차가 커졌다. 따라서 이 조합은 검증 구간에서는 유리했지만, 시험 구간 일반화는 충분히 확인되지 않았다.
 
-### 6.4 조합별 해석
+2. `PatchTST+iTransformer`
+   - 시험 구간에서 가장 낮은 RMSE `1.2308`을 기록하였다.
+   - 기본 예측 대비 검증과 시험 오차가 모두 개선되었다.
+   - PatchTST가 짧은 구간의 시간 패턴을 포착하고, iTransformer가 선택된 설명변수들 사이의 상호작용을 보정하는 역할을 했을 가능성이 있다.
+   - 다만 검증 기준 상위 3개에는 포함되지 않았으므로 본 보고서의 최종 선정 모형으로는 채택하지 않았다.
 
-**표 9. 주요 조합의 단계별 성능과 해석**
-| Experiment | Base_Val | S2_Val | Final_Val | Base_Test | S2_Test | Final_Test | 해석 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| PatchTST+Transformer | 1.5235 | 1.2580 | 1.2443 | 1.5339 | 2.2752 | 2.3577 | 선정 규칙상 공식 채택 대상이다. 다만 holdout test에서는 base보다 성능이 저하되었다. |
-| PatchTST+iTransformer | 1.5235 | 1.3534 | 1.3534 | 1.5339 | 1.2308 | 1.2308 | confirmatory 8개 중 base 대비 validation과 test를 모두 개선한 유일한 조합이다. 그러나 validation top 3 규칙 밖이므로 공식 채택 대상은 아니다. |
-| LSTM+PatchTST | 1.8687 | 1.2870 | 1.2524 | 1.2776 | 1.7378 | 1.5402 | RoR 적용 후 Stage 2 대비 test가 일부 회복되었으나, 최종 test는 LSTM base보다 높다. |
-| PatchTST+LSTM | 1.5235 | 1.2839 | 1.2789 | 1.5339 | 2.7910 | 2.7255 | validation 순위는 높지만 holdout test에서는 residual과 RoR 모두 base를 상회하지 못하였다. |
-| Transformer+Transformer | 1.3204 | 1.4914 | 1.4914 | 1.5563 | 1.4453 | 1.4453 | validation은 악화되었으나 test는 base 대비 소폭 개선되었다. 추가 검증이 필요한 후보이다. |
-| Transformer+iTransformer | 1.3204 | 1.4456 | 1.4456 | 1.5563 | 1.4526 | 1.4526 | test는 base 대비 소폭 개선되었으나 validation이 악화되어 현재 규칙에서는 채택 근거가 부족하다. |
+3. `LSTM+PatchTST`
+   - 검증 구간에서는 개선 폭이 컸으나 시험 구간에서는 2단계 보정 후 오차가 증가하였다.
+   - 이후 2차 잔차 보정으로 일부 회복되었지만, 기본 LSTM 예측보다 낮은 시험 오차를 만들지는 못했다.
+   - 이는 잔차 보정과 2차 잔차 보정이 항상 시험 성능 향상을 보장하지 않는다는 점을 보여준다.
 
-종합 해석:
-- `PatchTST+Transformer`는 selection rule상 공식 채택 모델이지만, holdout test에서는 base보다 성능이 저하되었다.
-- `PatchTST+iTransformer`는 confirmatory 8개 중 base 대비 validation과 test를 모두 개선한 유일한 조합이었다. 다만 현재 규칙상 공식 채택 모델은 아니다.
-- `LSTM+PatchTST`의 RoR는 Stage 2 대비 test를 일부 회복하였으나, 최종 test는 LSTM base보다 높았다.
-- `Transformer+Transformer`, `Transformer+iTransformer`는 holdout test에서 base 대비 소폭 개선되었지만 validation이 악화되어, 추가 rolling validation 없이는 채택 근거로 사용하기 어렵다.
+## 6. C 파일: STL 분해 기반 보조 실험
+### 6.1 파일의 목적
+C 파일의 목적은 유가 시계열을 추세, 계절, 불규칙 성분으로 나눈 뒤, baseline 예측과 잔차 보정을 순차적으로 적용하면 성능이 개선되는지를 확인하는 것이다. 즉 B 파일이 다양한 transformer 조합을 폭넓게 비교하는 실험이라면, C 파일은 구조 분해 관점에서 접근한 방법론 보조 실험이다.
 
-## 7. Residual, RoR, OOF의 의미와 한계
-### 7.1 Residual 보정
-Residual 단계는 base 모델이 설명하지 못한 1차 오차 `r_t = y_t^z - yhat_base_t^z`에 예측 가능한 구조가 남아 있는지 확인하기 위한 절차이다.
+### 6.2 사용한 절차
+C 파일의 절차는 다음과 같다.
+1. 학습 구간 유가에 대해 STL 분해를 수행한다.
+2. 분해된 구조를 바탕으로 `Exponential Smoothing`으로 baseline 예측을 수행한다.
+3. baseline 예측이 남긴 잔차를 `NLinear`로 보정한다.
+4. 그 이후에도 남는 2차 잔차를 `LightGBM`으로 추가 보정한다.
 
-### 7.2 RoR 보정
-RoR 단계는 residual 모델이 설명하지 못한 2차 오차 `q_t = r_t - rhat_t`를 다시 한 번 모델링하는 절차이다. 최종 예측은 `yhat_final_t = yhat_stage2_t + lambda * qhat_t * sigma_y`로 계산하였다.
+즉 C 파일은 `STL -> Exponential Smoothing -> NLinear 잔차 보정 -> LightGBM 2차 잔차 보정` 구조를 점검하는 실험이다.
 
-### 7.3 RoR 결과
+### 6.3 왜 이런 구조를 사용했는가
+- STL 분해는 시계열의 큰 흐름과 반복 패턴을 분리해 해석하려는 목적에 적합하다.
+- Exponential Smoothing은 분해 이후의 완만한 추세를 예측하는 데 직관적이다.
+- NLinear는 남은 잔차에 단순하지만 강한 선형 보정을 적용할 수 있다.
+- LightGBM은 잔차의 비선형 구조가 남아 있을 때 이를 추가로 포착할 가능성이 있다.
 
-**표 10. 공식 top 3 조합의 RoR 보정 결과**
-| Experiment | RoR_Strategy | RoR_Description | S2_Val_RMSE | S2_Test_RMSE | Final_Val_RMSE | Final_Test_RMSE |
-| --- | --- | --- | --- | --- | --- | --- |
-| PatchTST+Transformer | C | ElasticNet(a=0.01,l1=0.1,l=0.50) | 1.2580 | 2.2752 | 1.2443 | 2.3577 |
-| LSTM+PatchTST | G | AllFeatLGBM(l=0.50) | 1.2870 | 1.7378 | 1.2524 | 1.5402 |
-| PatchTST+LSTM | G | AllFeatLGBM(l=0.50) | 1.2839 | 2.7910 | 1.2789 | 2.7255 |
+즉 C 파일은 "전체 수준 예측"과 "잔차 예측"을 분리하여, 각 단계에 서로 다른 성격의 모형을 배치하는 접근이다.
 
-해석:
-- `PatchTST+Transformer`에서는 ElasticNet RoR가 validation은 개선했으나 test는 추가로 악화시켰다.
-- `LSTM+PatchTST`에서는 All-feature LightGBM RoR가 Stage 2 test를 일부 회복하였다. 다만 base보다 우수하지는 않았다.
-- `PatchTST+LSTM`에서는 validation 개선 폭이 작고 test는 여전히 높았다.
+### 6.4 결과
+**표 11. C 파일 성능 비교**
+| 모형 | 검증 RMSE | 시험 RMSE |
+| --- | ---: | ---: |
+| Random Walk | 1.8243 | 1.1227 |
+| ExpSmoothing (Baseline) | 5.2562 | 4.1678 |
+| Baseline + NLinear | 3.1601 | 1.2608 |
+| Full Framework (Baseline + NLinear + 2차 잔차 보정) | 2.8393 | 1.2822 |
 
-따라서 Residual과 RoR는 방법론적으로 의미가 있으나, 본 split에서는 `항상 성능을 높이는 일반 해법`으로 해석할 수 없다.
+### 6.5 C 파일 결과 해석
+- STL 분해 이후 `Exponential Smoothing`만 사용한 baseline은 성능이 좋지 않았다.
+- 여기에 `NLinear` 잔차 보정을 더하면 시험 RMSE가 `4.1678`에서 `1.2608`로 크게 개선되었다.
+- 그러나 `LightGBM` 기반 2차 잔차 보정을 추가한 뒤에는 시험 RMSE가 `1.2822`로 다시 소폭 높아졌다.
+- 또한 C 파일 내부의 단순 비교 기준인 `Random Walk`가 시험 RMSE `1.1227`로 가장 낮았다.
 
-## 8. 누수 점검
-- 모든 feature는 생성 후 `shift(1)`을 적용하였다.
-- SHAP importance와 변수 수 선택은 train에서만 수행하였다.
-- Scaler는 train에만 fit하였다.
-- Sequence buffer는 과거 문맥으로만 사용하였으며, target과 중복되지 않는다.
-- Screening, confirmatory rerun, top 3 선정, RoR lambda 선택은 validation 또는 train 내부 정보로만 수행하였다.
-- Test는 최종 holdout 보고용으로만 사용하였다.
+따라서 C 파일은 "STL 기반 구조가 언제나 더 우수하다"는 결론을 주지는 않는다. 오히려 잔차 보정 단계는 의미가 있었지만, 2차 잔차 보정은 이번 자료에서 추가 이득을 보장하지 않았다는 점을 보여주는 보조 실험으로 해석하는 것이 타당하다.
 
-판정: 코드 기준으로 직접적인 데이터 누수는 확인되지 않았다. 현재 남아 있는 주요 위험은 leakage가 아니라 `12주 validation block의 짧음`에 따른 selection variance이다.
+## 7. 종합 결론
+세 파일의 역할과 결과를 종합하면 다음과 같다.
+1. A 파일은 강한 기준 성능을 제공하였다. 메인 브랜치의 니켈 예측 구조는 유가 자료에서도 시험 RMSE `1.3440`을 기록하며 유효한 기준선으로 작동하였다.
+2. B 파일은 가장 폭넓고 적극적인 심화 실험이었다. 변수 선택, 모형 조합 비교, 재평가, 추가 보정을 단계적으로 수행한 결과, 시험 구간에서는 `PatchTST+iTransformer`가 가장 낮은 RMSE `1.2308`을 기록하였다.
+3. 다만 사전에 정한 검증 기준에 따라 최종 선정된 모형은 `PatchTST+Transformer + ElasticNet 기반 2차 잔차 보정`이었다. 따라서 본 보고서에서는 "최종 선정 모형"과 "시험 구간 최저 오차 조합"을 구분하여 제시하였다.
+4. C 파일은 STL 분해 기반 접근의 가능성과 한계를 함께 보여주었다. `Baseline + NLinear`는 baseline보다 크게 개선되었지만, 최종적으로는 A 파일과 B 파일의 우수 조합보다 강하다고 보기는 어려웠다.
 
-## 9. 향후 보완 방향
-1. `Nested rolling-origin validation`을 적용하여 여러 validation block에서 조합 순위를 집계할 필요가 있다.
-2. `PatchTST+iTransformer`는 새로운 confirmatory window에서 재평가할 필요가 있다.
-3. `Transformer+Transformer`, `Transformer+iTransformer`와 같이 holdout에서는 양호하나 validation이 약한 조합은 반복 검증이 필요하다.
-4. RoR는 `Stage 2 대비`와 `base 대비`를 동시에 만족하는 경우에만 채택하도록 규칙을 강화할 필요가 있다.
-5. SSM/Mamba 계열과 direct multi-horizon decoder를 추가하여 residual two-stage 구조 자체를 대체할 후보도 검토할 수 있다.
+**표 12. 최종 비교 정리**
+| 구분 | 대표 모형 | 시험 RMSE | 최종 해석 |
+| --- | --- | ---: | --- |
+| A 파일 | Hybrid_Naive0.7_GB0.3 | 1.3440 | 강한 기준 성능 |
+| B 파일 최종 선정 모형 | PatchTST+Transformer + ElasticNet 기반 2차 잔차 보정 | 2.3577 | 검증 기준으로는 최종 선정, 시험 일반화는 약함 |
+| B 파일 시험 최저 조합 | PatchTST+iTransformer | 1.2308 | 시험 구간에서 가장 낮은 오차 |
+| C 파일 STL 기반 최고 조합 | Baseline + NLinear | 1.2608 | STL 기반 구조 안에서는 가장 낮은 시험 오차 |
 
-## 10. 최종 요약
-1. Baseline과 advanced 실험은 동일한 train/validation/test 분할을 사용하였다.
-2. 니켈 메인 방식 hybrid baseline의 최고 성능은 test RMSE `1.3440`였다.
-3. Advanced 실험에서는 SHAP + TimeSeriesCV로 55개 후보 변수를 10개로 축소하였다.
-4. 25개 조합을 screening하고 상위 8개를 confirmatory rerun하였다.
-5. Selection rule상 공식 채택 모델은 `PatchTST+Transformer + ElasticNet RoR`였다.
-6. Confirmatory holdout test 최저 조합은 `PatchTST+iTransformer`였으며, test RMSE는 `1.2308`였다.
-7. 따라서 본 보고서의 결론은 `공식 채택 모델`과 `사후 holdout candidate`를 구분하여 제시하는 것이 타당하다.
+## 8. 향후 제안
+1. 하나의 검증 구간만으로는 조합 순위가 쉽게 바뀔 수 있으므로, rolling-origin 방식의 반복 검증을 추가할 필요가 있다.
+2. `PatchTST+iTransformer`는 현재 시험 구간에서 가장 낮은 오차를 보였으므로, 새로운 검증 창에서도 같은 우위를 보이는지 재확인할 필요가 있다.
+3. 2차 잔차 보정은 검증 오차를 낮추더라도 시험 오차를 항상 낮추는 것은 아니므로, 향후에는 채택 기준을 더 보수적으로 설계할 필요가 있다.
+4. STL 기반 구조는 해석 측면에서 장점이 있으므로, 추세와 계절 구조가 더 뚜렷한 다른 원자재 자료에서도 재검토할 가치가 있다.
