@@ -1,0 +1,49 @@
+{
+  "framework": "Seasonal Decomposition + Residual Refinement",
+  "target": "Com_BrentCrudeOil",
+  "data": {
+    "file": "data_weekly_260120.csv",
+    "n_observations": 668,
+    "n_features": 55,
+    "date_range": "2013-04-01 ~ 2026-01-12",
+    "frequency": "weekly (W-MON)"
+  },
+  "split": {
+    "train": "~ 2025-08-04 (644 weeks)",
+    "validation": "2025-08-04 ~ 2025-10-27 (12 weeks)",
+    "test": "2025-10-27 ~ end (12 weeks)"
+  },
+  "stage1_baseline": {
+    "method": "Exponential Smoothing (Holt-Winters)",
+    "trend": "additive",
+    "seasonal": "additive",
+    "seasonal_periods": 52,
+    "external_vars": false,
+    "forecasting": "single-fit on training, multi-step forecast for val+test"
+  },
+  "stage2_residual": {
+    "method": "NLinear (Zeng et al., AAAI 2023)",
+    "seq_len": 24,
+    "pred_len": 1,
+    "d_hidden": 64,
+    "lr": 0.001,
+    "max_epochs": 300,
+    "patience": 40,
+    "batch_size": 32,
+    "external_vars": true,
+    "n_exog_features": 55
+  },
+  "stage3_ror": {
+    "method": "LightGBM with Expanding-Window OOF",
+    "n_folds": 5,
+    "external_vars": true
+  },
+  "no_leakage_protocol": [
+    "All features lagged by 1 week",
+    "STL fitted on training data only",
+    "ExpSmoothing single-fit on training, multi-step forecast",
+    "NLinear trained on training only",
+    "LightGBM OOF with expanding window",
+    "Scalers fitted on training only"
+  ]
+}
