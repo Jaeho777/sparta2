@@ -5,7 +5,7 @@ Pipeline
 1. One-week lag all exogenous variables to prevent contemporaneous leakage.
 2. Fit a GradientBoostingRegressor on the training split.
 3. Build a nickel-style hybrid forecast:
-       y_hat = w * NaiveDrift + (1 - w) * GB
+       y_hat = w * TwoPointLinear + (1 - w) * GB
 4. Pick the best weight on validation and report untouched test metrics.
 """
 
@@ -40,8 +40,8 @@ class SplitData:
     y_train: pd.Series
     y_val: pd.Series
     y_test: pd.Series
-    naive_val: np.ndarray
-    naive_test: np.ndarray
+    two_point_val: np.ndarray
+    two_point_test: np.ndarray
 
 
 def rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -61,7 +61,7 @@ def load_frame() -> pd.DataFrame:
     return df
 
 
-def calc_naive_drift(y: pd.Series, indices: pd.Index) -> np.ndarray:
+def calc_two_point_linear(y: pd.Series, indices: pd.Index) -> np.ndarray:
     preds = []
     for idx in indices:
         loc = y.index.get_loc(idx)
@@ -87,8 +87,8 @@ def prepare_splits(df: pd.DataFrame) -> SplitData:
     y_val = y_all.loc[mask_val]
     y_test = y_all.loc[mask_test]
 
-    naive_val = calc_naive_drift(y_all, y_val.index)
-    naive_test = calc_naive_drift(y_all, y_test.index)
+    two_point_val = calc_two_point_linear(y_all, y_val.index)
+    two_point_test = calc_two_point_linear(y_all, y_test.index)
 
     return SplitData(
         X_train=X_train,
@@ -97,8 +97,8 @@ def prepare_splits(df: pd.DataFrame) -> SplitData:
         y_train=y_train,
         y_val=y_val,
         y_test=y_test,
-        naive_val=naive_val,
-        naive_test=naive_test,
+        two_point_val=two_point_val,
+        two_point_test=two_point_test,
     )
 
 
@@ -140,7 +140,7 @@ def main() -> None:
 
     results = []
 
-    results.append(build_result("Naive_Drift", split.y_test, split.naive_test))
+    results.append(build_result("TwoPointLinear", split.y_test, split.two_point_test))
     results.append(build_result("GradientBoosting", split.y_test, gb_test))
 
     best_weight = None
@@ -149,10 +149,10 @@ def main() -> None:
     best_test_pred = None
 
     for w in HYBRID_WEIGHTS:
-        val_pred = w * split.naive_val + (1.0 - w) * gb_val
-        test_pred = w * split.naive_test + (1.0 - w) * gb_test
+        val_pred = w * split.two_point_val + (1.0 - w) * gb_val
+        test_pred = w * split.two_point_test + (1.0 - w) * gb_test
         val_rmse = rmse(split.y_val.to_numpy(dtype=float), val_pred)
-        label = f"Hybrid_Naive{w:.1f}_GB{1.0-w:.1f}"
+        label = f"Hybrid_TwoPointLinear{w:.1f}_GB{1.0-w:.1f}"
         row = build_result(label, split.y_test, test_pred)
         row["Validation_RMSE"] = val_rmse
         results.append(row)
@@ -185,7 +185,7 @@ def main() -> None:
         {
             "dt": split.y_test.index,
             "actual": split.y_test.to_numpy(dtype=float),
-            "naive_drift": split.naive_test,
+            "two_point_linear": split.two_point_test,
             "gradient_boosting": gb_test,
             f"hybrid_{best_weight:.2f}": best_test_pred,
         }

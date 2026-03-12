@@ -144,7 +144,7 @@ def calc_random_walk(y: pd.Series, indices: pd.Index) -> np.ndarray:
     return y.shift(1).loc[indices].to_numpy(dtype=float)
 
 
-def calc_naive_drift(y: pd.Series, indices: pd.Index) -> np.ndarray:
+def calc_two_point_linear(y: pd.Series, indices: pd.Index) -> np.ndarray:
     preds = []
     for idx in indices:
         loc = y.index.get_loc(idx)
@@ -170,8 +170,8 @@ def run_baseline_window(df: pd.DataFrame, window: Window) -> list[dict[str, obje
     y_val = y_all.loc[mask_val]
     y_test = y_all.loc[mask_test]
 
-    naive_val = calc_naive_drift(y_all, y_val.index)
-    naive_test = calc_naive_drift(y_all, y_test.index)
+    two_point_val = calc_two_point_linear(y_all, y_val.index)
+    two_point_test = calc_two_point_linear(y_all, y_test.index)
     rw_test = calc_random_walk(y_all, y_test.index)
 
     imputer = SimpleImputer(strategy="median")
@@ -193,8 +193,8 @@ def run_baseline_window(df: pd.DataFrame, window: Window) -> list[dict[str, obje
     best_val_rmse = float("inf")
     best_test_rmse = None
     for weight in [0.70, 0.80, 0.90]:
-        val_pred = weight * naive_val + (1.0 - weight) * gb_val
-        test_pred = weight * naive_test + (1.0 - weight) * gb_test
+        val_pred = weight * two_point_val + (1.0 - weight) * gb_val
+        test_pred = weight * two_point_test + (1.0 - weight) * gb_test
         val_score = rmse(y_val.to_numpy(dtype=float), val_pred)
         test_score = rmse(y_test.to_numpy(dtype=float), test_pred)
         if val_score < best_val_rmse:
@@ -214,7 +214,7 @@ def run_baseline_window(df: pd.DataFrame, window: Window) -> list[dict[str, obje
         {
             "window": window.label,
             "family": "baseline",
-            "model": "Hybrid_NaiveDrift_GB",
+            "model": "Hybrid_TwoPointLinear_GB",
             "val_rmse": best_val_rmse,
             "test_rmse": best_test_rmse,
             "extra": f"validation-selected weight={best_weight:.2f}",
