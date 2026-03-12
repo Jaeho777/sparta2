@@ -53,6 +53,17 @@ def mape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return float(np.mean(np.abs((y_true - y_pred) / denom)) * 100.0)
 
 
+def nrmse_pct(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    return float(rmse(y_true, y_pred) / np.mean(y_true) * 100.0)
+
+
+def r2_metric(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    sst = float(np.mean((y_true - np.mean(y_true)) ** 2))
+    if sst <= 1e-12:
+        return float("nan")
+    return float(1.0 - np.mean((y_true - y_pred) ** 2) / sst)
+
+
 def load_frame() -> pd.DataFrame:
     df = pd.read_csv(DATA_PATH)
     df["dt"] = pd.to_datetime(df["dt"])
@@ -128,6 +139,8 @@ def build_result(model_name: str, y_true: pd.Series, pred: np.ndarray) -> dict[s
         "RMSE": rmse(yt, pred),
         "MAE": float(mean_absolute_error(yt, pred)),
         "MAPE(%)": mape(yt, pred),
+        "NRMSE(%)": nrmse_pct(yt, pred),
+        "R2": r2_metric(yt, pred),
     }
 
 
@@ -155,6 +168,8 @@ def main() -> None:
         label = f"Hybrid_TwoPointLinear{w:.1f}_GB{1.0-w:.1f}"
         row = build_result(label, split.y_test, test_pred)
         row["Validation_RMSE"] = val_rmse
+        row["Validation_NRMSE(%)"] = nrmse_pct(split.y_val.to_numpy(dtype=float), val_pred)
+        row["Validation_R2"] = r2_metric(split.y_val.to_numpy(dtype=float), val_pred)
         results.append(row)
 
         if val_rmse < best_val_rmse:

@@ -817,7 +817,10 @@ def compute_metrics(y_true, y_pred, label):
     rmse = np.sqrt(mean_squared_error(y_true, y_pred))
     mae = mean_absolute_error(y_true, y_pred)
     mape = np.mean(np.abs((y_true - y_pred) / y_true)) * 100
-    return {"Model": label, "RMSE": rmse, "MAE": mae, "MAPE(%)": mape}
+    nrmse = rmse / np.mean(y_true) * 100
+    sst = np.mean((y_true - np.mean(y_true)) ** 2)
+    r2 = np.nan if sst <= 1e-12 else 1.0 - np.mean((y_true - y_pred) ** 2) / sst
+    return {"Model": label, "RMSE": rmse, "MAE": mae, "MAPE(%)": mape, "NRMSE(%)": nrmse, "R2": r2}
 
 # Test results
 results_test = [

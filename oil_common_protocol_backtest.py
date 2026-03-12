@@ -13,7 +13,7 @@ import torch.nn as nn
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import ElasticNet
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.preprocessing import RobustScaler
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from torch.utils.data import DataLoader, Dataset
@@ -104,6 +104,22 @@ def rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return math.sqrt(mean_squared_error(y_true, y_pred))
 
 
+def mape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    denom = np.clip(np.abs(y_true), 1e-8, None)
+    return float(np.mean(np.abs((y_true - y_pred) / denom)) * 100.0)
+
+
+def nrmse_pct(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    return float(rmse(y_true, y_pred) / np.mean(y_true) * 100.0)
+
+
+def r2_metric(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    sst = float(np.mean((y_true - np.mean(y_true)) ** 2))
+    if sst <= 1e-12:
+        return float("nan")
+    return float(1.0 - np.mean((y_true - y_pred) ** 2) / sst)
+
+
 def set_seed(seed: int) -> None:
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -172,6 +188,7 @@ def run_baseline_window(df: pd.DataFrame, window: Window) -> list[dict[str, obje
 
     two_point_val = calc_two_point_linear(y_all, y_val.index)
     two_point_test = calc_two_point_linear(y_all, y_test.index)
+    rw_val = calc_random_walk(y_all, y_val.index)
     rw_test = calc_random_walk(y_all, y_test.index)
 
     imputer = SimpleImputer(strategy="median")
@@ -192,6 +209,8 @@ def run_baseline_window(df: pd.DataFrame, window: Window) -> list[dict[str, obje
     best_weight = None
     best_val_rmse = float("inf")
     best_test_rmse = None
+    best_val_pred = None
+    best_test_pred = None
     for weight in [0.70, 0.80, 0.90]:
         val_pred = weight * two_point_val + (1.0 - weight) * gb_val
         test_pred = weight * two_point_test + (1.0 - weight) * gb_test
@@ -201,14 +220,27 @@ def run_baseline_window(df: pd.DataFrame, window: Window) -> list[dict[str, obje
             best_weight = weight
             best_val_rmse = val_score
             best_test_rmse = test_score
+            best_val_pred = val_pred
+            best_test_pred = test_pred
+
+    if best_val_pred is None or best_test_pred is None:
+        raise RuntimeError("Failed to choose a baseline hybrid weight.")
 
     return [
         {
             "window": window.label,
             "family": "benchmark",
             "model": "RandomWalk_1step",
-            "val_rmse": rmse(y_val.to_numpy(dtype=float), calc_random_walk(y_all, y_val.index)),
+            "val_rmse": rmse(y_val.to_numpy(dtype=float), rw_val),
+            "val_mae": float(mean_absolute_error(y_val.to_numpy(dtype=float), rw_val)),
+            "val_mape": mape(y_val.to_numpy(dtype=float), rw_val),
+            "val_nrmse": nrmse_pct(y_val.to_numpy(dtype=float), rw_val),
+            "val_r2": r2_metric(y_val.to_numpy(dtype=float), rw_val),
             "test_rmse": rmse(y_test.to_numpy(dtype=float), rw_test),
+            "test_mae": float(mean_absolute_error(y_test.to_numpy(dtype=float), rw_test)),
+            "test_mape": mape(y_test.to_numpy(dtype=float), rw_test),
+            "test_nrmse": nrmse_pct(y_test.to_numpy(dtype=float), rw_test),
+            "test_r2": r2_metric(y_test.to_numpy(dtype=float), rw_test),
             "extra": "y_hat_t = y_(t-1)",
         },
         {
@@ -217,6 +249,14 @@ def run_baseline_window(df: pd.DataFrame, window: Window) -> list[dict[str, obje
             "model": "Hybrid_TwoPointLinear_GB",
             "val_rmse": best_val_rmse,
             "test_rmse": best_test_rmse,
+            "val_mae": float(mean_absolute_error(y_val.to_numpy(dtype=float), best_val_pred)),
+            "val_mape": mape(y_val.to_numpy(dtype=float), best_val_pred),
+            "val_nrmse": nrmse_pct(y_val.to_numpy(dtype=float), best_val_pred),
+            "val_r2": r2_metric(y_val.to_numpy(dtype=float), best_val_pred),
+            "test_mae": float(mean_absolute_error(y_test.to_numpy(dtype=float), best_test_pred)),
+            "test_mape": mape(y_test.to_numpy(dtype=float), best_test_pred),
+            "test_nrmse": nrmse_pct(y_test.to_numpy(dtype=float), best_test_pred),
+            "test_r2": r2_metric(y_test.to_numpy(dtype=float), best_test_pred),
             "extra": f"validation-selected weight={best_weight:.2f}",
         },
     ]
@@ -256,7 +296,15 @@ def run_transformer_stage2(
         "family": "transformer",
         "model": f"{base_name}+{residual_name}",
         "val_rmse": float(row["S2_Val_RMSE"]),
+        "val_mae": np.nan,
+        "val_mape": np.nan,
+        "val_nrmse": float(row["S2_Val_NRMSE(%)"]),
+        "val_r2": float(row["S2_Val_R2"]),
         "test_rmse": float(row["S2_Test_RMSE"]),
+        "test_mae": float(row["S2_Test_MAE"]),
+        "test_mape": float(row["S2_Test_MAPE(%)"]),
+        "test_nrmse": float(row["S2_Test_NRMSE(%)"]),
+        "test_r2": float(row["S2_Test_R2"]),
         "extra": (
             f"features={len(bundle.selected_features)} "
             f"seeds={TRANSFORMER_SEEDS} epochs={TRANSFORMER_EPOCHS}"
@@ -304,6 +352,14 @@ def run_transformer_stage3(
         "model": "PatchTST+Transformer+ElasticNetRoR",
         "val_rmse": rmse(y_val, final_val),
         "test_rmse": rmse(y_test, final_test),
+        "val_mae": float(mean_absolute_error(y_val, final_val)),
+        "val_mape": mape(y_val, final_val),
+        "val_nrmse": nrmse_pct(y_val, final_val),
+        "val_r2": r2_metric(y_val, final_val),
+        "test_mae": float(mean_absolute_error(y_test, final_test)),
+        "test_mape": mape(y_test, final_test),
+        "test_nrmse": nrmse_pct(y_test, final_test),
+        "test_r2": r2_metric(y_test, final_test),
         "extra": (
             f"alpha={ELASTIC_ALPHA} l1={ELASTIC_L1} "
             f"lambda={lam:.2f} gate={'on' if gated else 'off'}"
@@ -539,7 +595,15 @@ def run_stl_window(df: pd.DataFrame, window: Window, device: torch.device) -> li
             "family": "stl",
             "model": "ExpSmoothing",
             "val_rmse": rmse(y_val.to_numpy(dtype=float), baseline_val),
+            "val_mae": float(mean_absolute_error(y_val.to_numpy(dtype=float), baseline_val)),
+            "val_mape": mape(y_val.to_numpy(dtype=float), baseline_val),
+            "val_nrmse": nrmse_pct(y_val.to_numpy(dtype=float), baseline_val),
+            "val_r2": r2_metric(y_val.to_numpy(dtype=float), baseline_val),
             "test_rmse": rmse(y_test.to_numpy(dtype=float), baseline_test),
+            "test_mae": float(mean_absolute_error(y_test.to_numpy(dtype=float), baseline_test)),
+            "test_mape": mape(y_test.to_numpy(dtype=float), baseline_test),
+            "test_nrmse": nrmse_pct(y_test.to_numpy(dtype=float), baseline_test),
+            "test_r2": r2_metric(y_test.to_numpy(dtype=float), baseline_test),
             "extra": "one-step expanding refit",
         },
         {
@@ -547,7 +611,15 @@ def run_stl_window(df: pd.DataFrame, window: Window, device: torch.device) -> li
             "family": "stl",
             "model": "ExpSmoothing+NLinear",
             "val_rmse": rmse(y_val.to_numpy(dtype=float), stage2_val),
+            "val_mae": float(mean_absolute_error(y_val.to_numpy(dtype=float), stage2_val)),
+            "val_mape": mape(y_val.to_numpy(dtype=float), stage2_val),
+            "val_nrmse": nrmse_pct(y_val.to_numpy(dtype=float), stage2_val),
+            "val_r2": r2_metric(y_val.to_numpy(dtype=float), stage2_val),
             "test_rmse": rmse(y_test.to_numpy(dtype=float), stage2_test),
+            "test_mae": float(mean_absolute_error(y_test.to_numpy(dtype=float), stage2_test)),
+            "test_mape": mape(y_test.to_numpy(dtype=float), stage2_test),
+            "test_nrmse": nrmse_pct(y_test.to_numpy(dtype=float), stage2_test),
+            "test_r2": r2_metric(y_test.to_numpy(dtype=float), stage2_test),
             "extra": f"topk={STL_TOPK} seeds={STL_SEEDS}",
         },
         {
@@ -555,7 +627,15 @@ def run_stl_window(df: pd.DataFrame, window: Window, device: torch.device) -> li
             "family": "stl",
             "model": "ExpSmoothing+NLinear+LightGBM",
             "val_rmse": rmse(y_val.to_numpy(dtype=float), stage3_val),
+            "val_mae": float(mean_absolute_error(y_val.to_numpy(dtype=float), stage3_val)),
+            "val_mape": mape(y_val.to_numpy(dtype=float), stage3_val),
+            "val_nrmse": nrmse_pct(y_val.to_numpy(dtype=float), stage3_val),
+            "val_r2": r2_metric(y_val.to_numpy(dtype=float), stage3_val),
             "test_rmse": rmse(y_test.to_numpy(dtype=float), stage3_test),
+            "test_mae": float(mean_absolute_error(y_test.to_numpy(dtype=float), stage3_test)),
+            "test_mape": mape(y_test.to_numpy(dtype=float), stage3_test),
+            "test_nrmse": nrmse_pct(y_test.to_numpy(dtype=float), stage3_test),
+            "test_r2": r2_metric(y_test.to_numpy(dtype=float), stage3_test),
             "extra": f"gate={'on' if gate_on else 'off'}",
         },
     ]
@@ -567,8 +647,24 @@ def summarize(results_df: pd.DataFrame) -> pd.DataFrame:
         .agg(
             mean_val_rmse=("val_rmse", "mean"),
             std_val_rmse=("val_rmse", "std"),
+            mean_val_mae=("val_mae", "mean"),
+            std_val_mae=("val_mae", "std"),
+            mean_val_mape=("val_mape", "mean"),
+            std_val_mape=("val_mape", "std"),
+            mean_val_nrmse=("val_nrmse", "mean"),
+            std_val_nrmse=("val_nrmse", "std"),
+            mean_val_r2=("val_r2", "mean"),
+            std_val_r2=("val_r2", "std"),
             mean_test_rmse=("test_rmse", "mean"),
             std_test_rmse=("test_rmse", "std"),
+            mean_test_mae=("test_mae", "mean"),
+            std_test_mae=("test_mae", "std"),
+            mean_test_mape=("test_mape", "mean"),
+            std_test_mape=("test_mape", "std"),
+            mean_test_nrmse=("test_nrmse", "mean"),
+            std_test_nrmse=("test_nrmse", "std"),
+            mean_test_r2=("test_r2", "mean"),
+            std_test_r2=("test_r2", "std"),
             n_windows=("window", "count"),
         )
         .sort_values(["mean_test_rmse", "mean_val_rmse"])
@@ -576,8 +672,24 @@ def summarize(results_df: pd.DataFrame) -> pd.DataFrame:
     )
     summary["mean_val_rmse"] = summary["mean_val_rmse"].round(4)
     summary["std_val_rmse"] = summary["std_val_rmse"].fillna(0.0).round(4)
+    summary["mean_val_mae"] = summary["mean_val_mae"].round(4)
+    summary["std_val_mae"] = summary["std_val_mae"].fillna(0.0).round(4)
+    summary["mean_val_mape"] = summary["mean_val_mape"].round(4)
+    summary["std_val_mape"] = summary["std_val_mape"].fillna(0.0).round(4)
+    summary["mean_val_nrmse"] = summary["mean_val_nrmse"].round(4)
+    summary["std_val_nrmse"] = summary["std_val_nrmse"].fillna(0.0).round(4)
+    summary["mean_val_r2"] = summary["mean_val_r2"].round(4)
+    summary["std_val_r2"] = summary["std_val_r2"].fillna(0.0).round(4)
     summary["mean_test_rmse"] = summary["mean_test_rmse"].round(4)
     summary["std_test_rmse"] = summary["std_test_rmse"].fillna(0.0).round(4)
+    summary["mean_test_mae"] = summary["mean_test_mae"].round(4)
+    summary["std_test_mae"] = summary["std_test_mae"].fillna(0.0).round(4)
+    summary["mean_test_mape"] = summary["mean_test_mape"].round(4)
+    summary["std_test_mape"] = summary["std_test_mape"].fillna(0.0).round(4)
+    summary["mean_test_nrmse"] = summary["mean_test_nrmse"].round(4)
+    summary["std_test_nrmse"] = summary["std_test_nrmse"].fillna(0.0).round(4)
+    summary["mean_test_r2"] = summary["mean_test_r2"].round(4)
+    summary["std_test_r2"] = summary["std_test_r2"].fillna(0.0).round(4)
     return summary
 
 

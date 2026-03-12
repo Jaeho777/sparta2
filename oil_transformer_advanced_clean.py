@@ -112,6 +112,22 @@ def rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return math.sqrt(mean_squared_error(y_true, y_pred))
 
 
+def mape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    denom = np.clip(np.abs(y_true), 1e-8, None)
+    return float(np.mean(np.abs((y_true - y_pred) / denom)) * 100.0)
+
+
+def nrmse_pct(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    return float(rmse(y_true, y_pred) / np.mean(y_true) * 100.0)
+
+
+def r2_metric(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    sst = float(np.mean((y_true - np.mean(y_true)) ** 2))
+    if sst <= 1e-12:
+        return float("nan")
+    return float(1.0 - np.mean((y_true - y_pred) ** 2) / sst)
+
+
 def safe_to_price(pred: np.ndarray, ymean: float, ystd: float) -> np.ndarray:
     return pred * ystd + ymean
 
@@ -539,8 +555,16 @@ def run_stage2_experiment(
 
     base_val_price = safe_to_price(base_val, bundle.ymean, bundle.ystd)
     base_test_price = safe_to_price(base_test, bundle.ymean, bundle.ystd)
-    base_val_rmse = rmse(bundle.y_val.to_numpy(dtype=float)[-len(base_val_price) :], base_val_price)
-    base_test_rmse = rmse(bundle.y_test.to_numpy(dtype=float)[-len(base_test_price) :], base_test_price)
+    y_val_arr = bundle.y_val.to_numpy(dtype=float)[-len(base_val_price) :]
+    y_test_arr = bundle.y_test.to_numpy(dtype=float)[-len(base_test_price) :]
+    base_val_rmse = rmse(y_val_arr, base_val_price)
+    base_test_rmse = rmse(y_test_arr, base_test_price)
+    base_test_mae = float(mean_absolute_error(y_test_arr, base_test_price))
+    base_test_mape = mape(y_test_arr, base_test_price)
+    base_val_nrmse = nrmse_pct(y_val_arr, base_val_price)
+    base_val_r2 = r2_metric(y_val_arr, base_val_price)
+    base_test_nrmse = nrmse_pct(y_test_arr, base_test_price)
+    base_test_r2 = r2_metric(y_test_arr, base_test_price)
 
     resid_train_target = (bundle.ytr_seq - base_train).astype(np.float32)
     resid_val_target = (bundle.yva_seq - base_val[-len(bundle.yva_seq) :]).astype(np.float32)
@@ -580,8 +604,16 @@ def run_stage2_experiment(
 
     s2_val = safe_to_price(base_val[-len(resid_val) :] + resid_val, bundle.ymean, bundle.ystd)
     s2_test = safe_to_price(base_test[-len(resid_test) :] + resid_test, bundle.ymean, bundle.ystd)
-    s2_val_rmse = rmse(bundle.y_val.to_numpy(dtype=float)[-len(s2_val) :], s2_val)
-    s2_test_rmse = rmse(bundle.y_test.to_numpy(dtype=float)[-len(s2_test) :], s2_test)
+    y_val_s2 = bundle.y_val.to_numpy(dtype=float)[-len(s2_val) :]
+    y_test_s2 = bundle.y_test.to_numpy(dtype=float)[-len(s2_test) :]
+    s2_val_rmse = rmse(y_val_s2, s2_val)
+    s2_test_rmse = rmse(y_test_s2, s2_test)
+    s2_test_mae = float(mean_absolute_error(y_test_s2, s2_test))
+    s2_test_mape = mape(y_test_s2, s2_test)
+    s2_val_nrmse = nrmse_pct(y_val_s2, s2_val)
+    s2_val_r2 = r2_metric(y_val_s2, s2_val)
+    s2_test_nrmse = nrmse_pct(y_test_s2, s2_test)
+    s2_test_r2 = r2_metric(y_test_s2, s2_test)
 
     row = {
         "Experiment": label,
@@ -589,8 +621,20 @@ def run_stage2_experiment(
         "Residual": resid_name,
         "Base_Val_RMSE": base_val_rmse,
         "Base_Test_RMSE": base_test_rmse,
+        "Base_Test_MAE": base_test_mae,
+        "Base_Test_MAPE(%)": base_test_mape,
+        "Base_Val_NRMSE(%)": base_val_nrmse,
+        "Base_Val_R2": base_val_r2,
+        "Base_Test_NRMSE(%)": base_test_nrmse,
+        "Base_Test_R2": base_test_r2,
         "S2_Val_RMSE": s2_val_rmse,
         "S2_Test_RMSE": s2_test_rmse,
+        "S2_Test_MAE": s2_test_mae,
+        "S2_Test_MAPE(%)": s2_test_mape,
+        "S2_Val_NRMSE(%)": s2_val_nrmse,
+        "S2_Val_R2": s2_val_r2,
+        "S2_Test_NRMSE(%)": s2_test_nrmse,
+        "S2_Test_R2": s2_test_r2,
         "Seeds": n_seeds,
         "Epochs": epochs,
         "Patience": patience,
@@ -1170,14 +1214,27 @@ def main() -> None:
                     "Residual": row["Residual"],
                     "S2_Val_RMSE": row["S2_Val_RMSE"],
                     "S2_Test_RMSE": row["S2_Test_RMSE"],
+                    "S2_Test_MAE": row["S2_Test_MAE"],
+                    "S2_Test_MAPE(%)": row["S2_Test_MAPE(%)"],
+                    "S2_Val_NRMSE(%)": row["S2_Val_NRMSE(%)"],
+                    "S2_Val_R2": row["S2_Val_R2"],
+                    "S2_Test_NRMSE(%)": row["S2_Test_NRMSE(%)"],
+                    "S2_Test_R2": row["S2_Test_R2"],
                     "RoR_Strategy": "None",
                     "RoR_Description": "No validation improvement",
                     "Final_Val_RMSE": row["S2_Val_RMSE"],
                     "Final_Test_RMSE": row["S2_Test_RMSE"],
+                    "Final_Test_MAE": row["S2_Test_MAE"],
+                    "Final_Test_MAPE(%)": row["S2_Test_MAPE(%)"],
+                    "Final_Val_NRMSE(%)": row["S2_Val_NRMSE(%)"],
+                    "Final_Val_R2": row["S2_Val_R2"],
+                    "Final_Test_NRMSE(%)": row["S2_Test_NRMSE(%)"],
+                    "Final_Test_R2": row["S2_Test_R2"],
                 }
             )
         else:
-            _, _, val_rmse, desc = best_tuple
+            _, pred_test, val_rmse, desc = best_tuple
+            pred_val, _, _, _ = best_tuple
             ror_rows.append(
                 {
                     "Experiment": label,
@@ -1185,10 +1242,22 @@ def main() -> None:
                     "Residual": row["Residual"],
                     "S2_Val_RMSE": row["S2_Val_RMSE"],
                     "S2_Test_RMSE": row["S2_Test_RMSE"],
+                    "S2_Test_MAE": row["S2_Test_MAE"],
+                    "S2_Test_MAPE(%)": row["S2_Test_MAPE(%)"],
+                    "S2_Val_NRMSE(%)": row["S2_Val_NRMSE(%)"],
+                    "S2_Val_R2": row["S2_Val_R2"],
+                    "S2_Test_NRMSE(%)": row["S2_Test_NRMSE(%)"],
+                    "S2_Test_R2": row["S2_Test_R2"],
                     "RoR_Strategy": best_key,
                     "RoR_Description": desc,
                     "Final_Val_RMSE": val_rmse,
                     "Final_Test_RMSE": final_test_rmse,
+                    "Final_Test_MAE": float(mean_absolute_error(y_test_arr, pred_test)),
+                    "Final_Test_MAPE(%)": mape(y_test_arr, pred_test),
+                    "Final_Val_NRMSE(%)": nrmse_pct(y_val_arr, pred_val),
+                    "Final_Val_R2": r2_metric(y_val_arr, pred_val),
+                    "Final_Test_NRMSE(%)": nrmse_pct(y_test_arr, pred_test),
+                    "Final_Test_R2": r2_metric(y_test_arr, pred_test),
                 }
             )
 
