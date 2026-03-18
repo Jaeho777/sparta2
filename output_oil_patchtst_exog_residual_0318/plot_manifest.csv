@@ -1,0 +1,5 @@
+EvalSplit,Target,PlotPath,Description
+tscv,WTI Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_patchtst_exog_residual_0318/plots/tscv_wti_oil_actual_vs_pred.png,Actual vs prediction comparison
+holdout,WTI Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_patchtst_exog_residual_0318/plots/holdout_wti_oil_actual_vs_pred.png,Actual vs prediction comparison
+tscv,Brent Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_patchtst_exog_residual_0318/plots/tscv_brent_oil_actual_vs_pred.png,Actual vs prediction comparison
+holdout,Brent Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_patchtst_exog_residual_0318/plots/holdout_brent_oil_actual_vs_pred.png,Actual vs prediction comparison
