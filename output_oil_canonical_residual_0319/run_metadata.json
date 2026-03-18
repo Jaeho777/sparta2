@@ -1,0 +1,7228 @@
+{
+  "protocol": {
+    "input_size": 48,
+    "eval_window": 12,
+    "step_size": 4,
+    "n_windows": 24,
+    "final_holdout": 12,
+    "season_length": 52,
+    "inner_n_splits": 5,
+    "inner_val_size": 24,
+    "min_inner_train": 120
+  },
+  "patchtst": {
+    "hidden_size": 128,
+    "attention_heads": 16,
+    "linear_hidden_size": 256,
+    "patch_len": 16,
+    "stride": 8,
+    "dropout": 0.2,
+    "encoder_layers": 3,
+    "attn_dropout": 0.0,
+    "fc_dropout": 0.2,
+    "max_steps": 300,
+    "learning_rate": 0.0001,
+    "batch_size": 32,
+    "patience": 20,
+    "weight_decay": 1e-05
+  },
+  "nlinear": {
+    "max_steps": 200,
+    "learning_rate": 0.001,
+    "batch_size": 64,
+    "patience": 20,
+    "weight_decay": 0.0
+  },
+  "itransformer": {
+    "hidden_size": 64,
+    "attention_heads": 4,
+    "encoder_layers": 2,
+    "dropout": 0.2,
+    "max_steps": 200,
+    "learning_rate": 0.001,
+    "batch_size": 64,
+    "patience": 20,
+    "weight_decay": 1e-05
+  },
+  "tree_model": {
+    "n_estimators": 100,
+    "learning_rate": 0.03,
+    "max_depth": 4,
+    "num_leaves": 31,
+    "min_child_samples": 20,
+    "min_child_weight": 1.0,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "reg_alpha": 0.0,
+    "reg_lambda": 1.0,
+    "early_stopping_rounds": 20
+  },
+  "seed": 42,
+  "device": "cpu",
+  "target_map": {
+    "WTI Oil": "Com_CrudeOil",
+    "Brent Oil": "Com_BrentCrudeOil"
+  },
+  "settings": [
+    "univariate",
+    "exogenous"
+  ],
+  "initial_train_len": 552,
+  "initial_train_end": "2023-10-23",
+  "eval_start": "2023-10-30",
+  "holdout_start": "2025-10-27",
+  "feature_metadata": {
+    "univariate:WTI Oil": {
+      "target_col": "Com_CrudeOil",
+      "feature_count": 1,
+      "feature_names": [
+        "Com_CrudeOil"
+      ]
+    },
+    "univariate:Brent Oil": {
+      "target_col": "Com_BrentCrudeOil",
+      "feature_count": 1,
+      "feature_names": [
+        "Com_BrentCrudeOil"
+      ]
+    },
+    "exogenous:WTI Oil": {
+      "target_col": "Com_CrudeOil",
+      "feature_count": 59,
+      "feature_names": [
+        "Com_CrudeOil",
+        "Com_BrentCrudeOil",
+        "Com_Gasoline",
+        "Com_NaturalGas",
+        "Com_Uranium",
+        "Com_Coal",
+        "Com_LME_Cu_Cash",
+        "Com_Steel",
+        "Com_Iron_Ore",
+        "Idx_DxyUSD",
+        "EX_USD_CNY",
+        "Bonds_US_10Y",
+        "Bonds_US_2Y",
+        "Bonds_US_3M",
+        "Idx_SnPVIX",
+        "Com_Gold",
+        "Idx_SnP500",
+        "Idx_CSI300",
+        "EX_USD_KRW",
+        "Bonds_KOR_10Y",
+        "EX_USD_JPY",
+        "Com_Corn",
+        "Com_Soybeans",
+        "Com_PalmOil",
+        "Com_CrudeOil_ret",
+        "Com_BrentCrudeOil_ret",
+        "Com_Gasoline_ret",
+        "Com_NaturalGas_ret",
+        "Com_Uranium_ret",
+        "Com_Coal_ret",
+        "Com_LME_Cu_Cash_ret",
+        "Com_Steel_ret",
+        "Com_Iron_Ore_ret",
+        "Idx_DxyUSD_ret",
+        "EX_USD_CNY_ret",
+        "Bonds_US_10Y_ret",
+        "Bonds_US_2Y_ret",
+        "Bonds_US_3M_ret",
+        "Idx_SnPVIX_ret",
+        "Com_Gold_ret",
+        "Idx_SnP500_ret",
+        "Idx_CSI300_ret",
+        "EX_USD_KRW_ret",
+        "Bonds_KOR_10Y_ret",
+        "EX_USD_JPY_ret",
+        "Com_Corn_ret",
+        "Com_Soybeans_ret",
+        "Com_PalmOil_ret",
+        "Spread_US_10Y_2Y",
+        "Spread_Crack",
+        "Ratio_Gold_Oil",
+        "Com_Gasoline_ma4_ratio",
+        "Com_Gasoline_ma12_ratio",
+        "Com_NaturalGas_ma4_ratio",
+        "Com_NaturalGas_ma12_ratio",
+        "Idx_SnPVIX_ma4_ratio",
+        "Idx_SnPVIX_ma12_ratio",
+        "Idx_DxyUSD_ma4_ratio",
+        "Idx_DxyUSD_ma12_ratio"
+      ]
+    },
+    "exogenous:Brent Oil": {
+      "target_col": "Com_BrentCrudeOil",
+      "feature_count": 59,
+      "feature_names": [
+        "Com_CrudeOil",
+        "Com_BrentCrudeOil",
+        "Com_Gasoline",
+        "Com_NaturalGas",
+        "Com_Uranium",
+        "Com_Coal",
+        "Com_LME_Cu_Cash",
+        "Com_Steel",
+        "Com_Iron_Ore",
+        "Idx_DxyUSD",
+        "EX_USD_CNY",
+        "Bonds_US_10Y",
+        "Bonds_US_2Y",
+        "Bonds_US_3M",
+        "Idx_SnPVIX",
+        "Com_Gold",
+        "Idx_SnP500",
+        "Idx_CSI300",
+        "EX_USD_KRW",
+        "Bonds_KOR_10Y",
+        "EX_USD_JPY",
+        "Com_Corn",
+        "Com_Soybeans",
+        "Com_PalmOil",
+        "Com_CrudeOil_ret",
+        "Com_BrentCrudeOil_ret",
+        "Com_Gasoline_ret",
+        "Com_NaturalGas_ret",
+        "Com_Uranium_ret",
+        "Com_Coal_ret",
+        "Com_LME_Cu_Cash_ret",
+        "Com_Steel_ret",
+        "Com_Iron_Ore_ret",
+        "Idx_DxyUSD_ret",
+        "EX_USD_CNY_ret",
+        "Bonds_US_10Y_ret",
+        "Bonds_US_2Y_ret",
+        "Bonds_US_3M_ret",
+        "Idx_SnPVIX_ret",
+        "Com_Gold_ret",
+        "Idx_SnP500_ret",
+        "Idx_CSI300_ret",
+        "EX_USD_KRW_ret",
+        "Bonds_KOR_10Y_ret",
+        "EX_USD_JPY_ret",
+        "Com_Corn_ret",
+        "Com_Soybeans_ret",
+        "Com_PalmOil_ret",
+        "Spread_US_10Y_2Y",
+        "Spread_Crack",
+        "Ratio_Gold_Oil",
+        "Com_Gasoline_ma4_ratio",
+        "Com_Gasoline_ma12_ratio",
+        "Com_NaturalGas_ma4_ratio",
+        "Com_NaturalGas_ma12_ratio",
+        "Idx_SnPVIX_ma4_ratio",
+        "Idx_SnPVIX_ma12_ratio",
+        "Idx_DxyUSD_ma4_ratio",
+        "Idx_DxyUSD_ma12_ratio"
+      ]
+    }
+  },
+  "target_ranges": {
+    "univariate:WTI Oil": 100.15599822998047,
+    "univariate:Brent Oil": 97.45600128173828,
+    "exogenous:WTI Oil": 100.15599822998047,
+    "exogenous:Brent Oil": 97.45600128173828
+  },
+  "fit_metadata": [
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 1,
+      "PatchTST": {
+        "best_val_mse": 0.1272685518488288,
+        "steps": 300,
+        "train_samples": 404,
+        "val_samples": 100
+      },
+      "NLinear": {
+        "best_val_mse": 6.690812110900879,
+        "steps": 32,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 10.042342185974121,
+        "steps": 78,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 308,
+          "val_samples": 76,
+          "best_val_mse": 0.08707316406071186,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 327,
+          "val_samples": 81,
+          "best_val_mse": 0.02588713976244132,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.051090904201070465,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.06005514164765676,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.11921435594558716,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 2,
+      "PatchTST": {
+        "best_val_mse": 0.1604208080098033,
+        "steps": 300,
+        "train_samples": 407,
+        "val_samples": 101
+      },
+      "NLinear": {
+        "best_val_mse": 6.669241905212402,
+        "steps": 34,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 26.42600440979004,
+        "steps": 72,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 311,
+          "val_samples": 77,
+          "best_val_mse": 0.08068245152632396,
+          "steps": 270
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 330,
+          "val_samples": 82,
+          "best_val_mse": 0.024770144062737625,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.03976644823948542,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.08318802217642467,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.08692915985981624,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 3,
+      "PatchTST": {
+        "best_val_mse": 0.13998483307659626,
+        "steps": 300,
+        "train_samples": 410,
+        "val_samples": 102
+      },
+      "NLinear": {
+        "best_val_mse": 10.35697078704834,
+        "steps": 62,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 30.1773624420166,
+        "steps": 136,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 314,
+          "val_samples": 78,
+          "best_val_mse": 0.07250562806924184,
+          "steps": 260
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 333,
+          "val_samples": 83,
+          "best_val_mse": 0.025765169101456802,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.058538115583360195,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.05989360809326172,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.08227548655122519,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 4,
+      "PatchTST": {
+        "best_val_mse": 0.10510294046252966,
+        "steps": 300,
+        "train_samples": 413,
+        "val_samples": 103
+      },
+      "NLinear": {
+        "best_val_mse": 11.058191299438477,
+        "steps": 25,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 43.9138069152832,
+        "steps": 72,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 317,
+          "val_samples": 79,
+          "best_val_mse": 0.052125751972198486,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 336,
+          "val_samples": 84,
+          "best_val_mse": 0.05608497001230717,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.06198974667737881,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.06950732320547104,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.08317612973041832,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 5,
+      "PatchTST": {
+        "best_val_mse": 0.11515443958342075,
+        "steps": 300,
+        "train_samples": 416,
+        "val_samples": 104
+      },
+      "NLinear": {
+        "best_val_mse": 10.175447463989258,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 34.0529670715332,
+        "steps": 112,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 320,
+          "val_samples": 80,
+          "best_val_mse": 0.025425550217429798,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 340,
+          "val_samples": 84,
+          "best_val_mse": 0.0489214143405358,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.05983217743535837,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.08628126916786034,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.17280830070376396,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 6,
+      "PatchTST": {
+        "best_val_mse": 0.10682875826023519,
+        "steps": 300,
+        "train_samples": 420,
+        "val_samples": 104
+      },
+      "NLinear": {
+        "best_val_mse": 6.386909484863281,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 19.112337112426758,
+        "steps": 142,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 324,
+          "val_samples": 80,
+          "best_val_mse": 0.02407056652009487,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 343,
+          "val_samples": 85,
+          "best_val_mse": 0.038159159322579704,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.0688836369663477,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.07301333174109459,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.0777746420353651,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 7,
+      "PatchTST": {
+        "best_val_mse": 0.1381130125373602,
+        "steps": 300,
+        "train_samples": 423,
+        "val_samples": 105
+      },
+      "NLinear": {
+        "best_val_mse": 5.931604862213135,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 22.78350830078125,
+        "steps": 56,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 327,
+          "val_samples": 81,
+          "best_val_mse": 0.027788769453763962,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.048865114338696,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.06978486788769563,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.0977748582760493,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.10397011321038008,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 8,
+      "PatchTST": {
+        "best_val_mse": 0.22221100144088268,
+        "steps": 300,
+        "train_samples": 426,
+        "val_samples": 106
+      },
+      "NLinear": {
+        "best_val_mse": 2.6924057006835938,
+        "steps": 109,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 27.90102195739746,
+        "steps": 66,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 330,
+          "val_samples": 82,
+          "best_val_mse": 0.03681420969466368,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.047128044379254184,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.06813730423649152,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.08228298525015514,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.18191539496183395,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 9,
+      "PatchTST": {
+        "best_val_mse": 0.18455287255346775,
+        "steps": 300,
+        "train_samples": 429,
+        "val_samples": 107
+      },
+      "NLinear": {
+        "best_val_mse": 3.653787136077881,
+        "steps": 54,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 32.64837646484375,
+        "steps": 74,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 333,
+          "val_samples": 83,
+          "best_val_mse": 0.03369626154502233,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.0597921342899402,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.06478873329857986,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.0714029602240771,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.12590339872986078,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 10,
+      "PatchTST": {
+        "best_val_mse": 0.2203096654266119,
+        "steps": 300,
+        "train_samples": 432,
+        "val_samples": 108
+      },
+      "NLinear": {
+        "best_val_mse": 5.879447937011719,
+        "steps": 23,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 62.48039627075195,
+        "steps": 74,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 336,
+          "val_samples": 84,
+          "best_val_mse": 0.052285107473532356,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.058757759630680084,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.07286913444598515,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.10508634429425001,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.13262000121176243,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 11,
+      "PatchTST": {
+        "best_val_mse": 0.3293001316487789,
+        "steps": 300,
+        "train_samples": 436,
+        "val_samples": 108
+      },
+      "NLinear": {
+        "best_val_mse": 7.980502605438232,
+        "steps": 31,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 9.283141136169434,
+        "steps": 100,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 340,
+          "val_samples": 84,
+          "best_val_mse": 0.05372879095375538,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.07360318986078103,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.07481867571671803,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.08694040076807141,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.09309922577813268,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 12,
+      "PatchTST": {
+        "best_val_mse": 0.26866112649440765,
+        "steps": 300,
+        "train_samples": 439,
+        "val_samples": 109
+      },
+      "NLinear": {
+        "best_val_mse": 8.518962860107422,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 12.897990226745605,
+        "steps": 78,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 343,
+          "val_samples": 85,
+          "best_val_mse": 0.04434524973233541,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.05740361536542574,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.08199188113212585,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.07626716140657663,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.07622797973453999,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 13,
+      "PatchTST": {
+        "best_val_mse": 0.3524050721898675,
+        "steps": 300,
+        "train_samples": 442,
+        "val_samples": 110
+      },
+      "NLinear": {
+        "best_val_mse": 8.887322425842285,
+        "steps": 31,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 7.571115970611572,
+        "steps": 126,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.05827253684401512,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.07541107758879662,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.08676557242870331,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.12400108762085438,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 423,
+          "val_samples": 105,
+          "best_val_mse": 0.07968164584599435,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 14,
+      "PatchTST": {
+        "best_val_mse": 0.27236893121153116,
+        "steps": 300,
+        "train_samples": 445,
+        "val_samples": 111
+      },
+      "NLinear": {
+        "best_val_mse": 20.56468391418457,
+        "steps": 66,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 23.091354370117188,
+        "steps": 200,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.05672194746633371,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.07635875046253204,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.10652279108762741,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.1694925157353282,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 426,
+          "val_samples": 106,
+          "best_val_mse": 0.21620664931833744,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 15,
+      "PatchTST": {
+        "best_val_mse": 0.22811831906437874,
+        "steps": 300,
+        "train_samples": 448,
+        "val_samples": 112
+      },
+      "NLinear": {
+        "best_val_mse": 20.41609764099121,
+        "steps": 28,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 24.327880859375,
+        "steps": 162,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.0749846597512563,
+          "steps": 297
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.09242536500096321,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.07993461276834068,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.14433893747627735,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.18655491434037685,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 16,
+      "PatchTST": {
+        "best_val_mse": 0.2125074677169323,
+        "steps": 300,
+        "train_samples": 452,
+        "val_samples": 112
+      },
+      "NLinear": {
+        "best_val_mse": 18.09335708618164,
+        "steps": 22,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 10.123485565185547,
+        "steps": 126,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.06508159544318914,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.08008133123318355,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.0662568083498627,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.11226159520447254,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 432,
+          "val_samples": 108,
+          "best_val_mse": 0.2635283824056387,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 17,
+      "PatchTST": {
+        "best_val_mse": 0.19779606023803353,
+        "steps": 300,
+        "train_samples": 455,
+        "val_samples": 113
+      },
+      "NLinear": {
+        "best_val_mse": 12.31989574432373,
+        "steps": 24,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 21.04702377319336,
+        "steps": 86,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.05576731264591217,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.07186137636502583,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.14373017568141222,
+          "steps": 286
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.12072413135319948,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 436,
+          "val_samples": 108,
+          "best_val_mse": 0.2637535650283098,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 18,
+      "PatchTST": {
+        "best_val_mse": 0.165787685662508,
+        "steps": 300,
+        "train_samples": 458,
+        "val_samples": 114
+      },
+      "NLinear": {
+        "best_val_mse": 4.232049465179443,
+        "steps": 46,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 26.963762283325195,
+        "steps": 58,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.06727189011871815,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.07890840371449788,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.08133883750997484,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.10098970588296652,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 439,
+          "val_samples": 109,
+          "best_val_mse": 0.16351833008229733,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 19,
+      "PatchTST": {
+        "best_val_mse": 0.19064887054264545,
+        "steps": 300,
+        "train_samples": 461,
+        "val_samples": 115
+      },
+      "NLinear": {
+        "best_val_mse": 4.7600932121276855,
+        "steps": 23,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 8.320673942565918,
+        "steps": 86,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.0777468541637063,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.13556216905514398,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.1604105494916439,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 423,
+          "val_samples": 105,
+          "best_val_mse": 0.10534340981394053,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 442,
+          "val_samples": 110,
+          "best_val_mse": 0.1183692179620266,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 20,
+      "PatchTST": {
+        "best_val_mse": 0.35890595242381096,
+        "steps": 300,
+        "train_samples": 464,
+        "val_samples": 116
+      },
+      "NLinear": {
+        "best_val_mse": 7.602760314941406,
+        "steps": 32,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 8.003053665161133,
+        "steps": 140,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.08209464078148206,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.09588846812645595,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.15244167484343052,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 426,
+          "val_samples": 106,
+          "best_val_mse": 0.1897192820906639,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 445,
+          "val_samples": 111,
+          "best_val_mse": 0.2366743218153715,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 21,
+      "PatchTST": {
+        "best_val_mse": 0.20093278773128986,
+        "steps": 300,
+        "train_samples": 468,
+        "val_samples": 116
+      },
+      "NLinear": {
+        "best_val_mse": 8.35865592956543,
+        "steps": 31,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 7.417621612548828,
+        "steps": 86,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.07401460905869801,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.1110756155103445,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.17832001857459545,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.3357257340103388,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 448,
+          "val_samples": 112,
+          "best_val_mse": 0.2540834750980139,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 22,
+      "PatchTST": {
+        "best_val_mse": 0.17100249975919724,
+        "steps": 300,
+        "train_samples": 471,
+        "val_samples": 117
+      },
+      "NLinear": {
+        "best_val_mse": 14.566914558410645,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 24.5777587890625,
+        "steps": 48,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.08501442273457845,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.10629036603495479,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.12835931032896042,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 432,
+          "val_samples": 108,
+          "best_val_mse": 0.18650862388312817,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 452,
+          "val_samples": 112,
+          "best_val_mse": 0.19428626168519258,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 23,
+      "PatchTST": {
+        "best_val_mse": 0.31622448191046715,
+        "steps": 300,
+        "train_samples": 474,
+        "val_samples": 118
+      },
+      "NLinear": {
+        "best_val_mse": 17.85191535949707,
+        "steps": 56,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 69.67505645751953,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.08432459086179733,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.15179813653230667,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.10485652042552829,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 436,
+          "val_samples": 108,
+          "best_val_mse": 0.4185192286968231,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 455,
+          "val_samples": 113,
+          "best_val_mse": 0.29838904924690723,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 24,
+      "PatchTST": {
+        "best_val_mse": 0.18037140555679798,
+        "steps": 300,
+        "train_samples": 477,
+        "val_samples": 119
+      },
+      "NLinear": {
+        "best_val_mse": 18.814390182495117,
+        "steps": 24,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 66.57168579101562,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.07717946544289589,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.10756517108529806,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.10737671051174402,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 439,
+          "val_samples": 109,
+          "best_val_mse": 0.30159901082515717,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 458,
+          "val_samples": 114,
+          "best_val_mse": 0.19701739214360714,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "WTI Oil",
+      "EvalSplit": "holdout",
+      "WindowId": 1,
+      "PatchTST": {
+        "best_val_mse": 0.14924908988177776,
+        "steps": 300,
+        "train_samples": 487,
+        "val_samples": 121
+      },
+      "NLinear": {
+        "best_val_mse": 9.420877456665039,
+        "steps": 29,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 37.397743225097656,
+        "steps": 84,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.07289267267333344,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.16917346231639385,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.1936846822500229,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 448,
+          "val_samples": 112,
+          "best_val_mse": 0.2527553793042898,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 468,
+          "val_samples": 116,
+          "best_val_mse": 0.2415508907288313,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 1,
+      "PatchTST": {
+        "best_val_mse": 0.12604662589728832,
+        "steps": 300,
+        "train_samples": 404,
+        "val_samples": 100
+      },
+      "NLinear": {
+        "best_val_mse": 8.660723686218262,
+        "steps": 46,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 14.389433860778809,
+        "steps": 58,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 308,
+          "val_samples": 76,
+          "best_val_mse": 0.07034747442230582,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 327,
+          "val_samples": 81,
+          "best_val_mse": 0.015166257663319508,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.04085973650217056,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.09161998704075813,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.1520990232626597,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 2,
+      "PatchTST": {
+        "best_val_mse": 0.13711426500231028,
+        "steps": 300,
+        "train_samples": 407,
+        "val_samples": 101
+      },
+      "NLinear": {
+        "best_val_mse": 8.413945198059082,
+        "steps": 71,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 16.751792907714844,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 311,
+          "val_samples": 77,
+          "best_val_mse": 0.0662114005535841,
+          "steps": 260
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 330,
+          "val_samples": 82,
+          "best_val_mse": 0.03760402277112007,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.07450802624225616,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.1345162931829691,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.10438066720962524,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 3,
+      "PatchTST": {
+        "best_val_mse": 0.12832894083112478,
+        "steps": 300,
+        "train_samples": 410,
+        "val_samples": 102
+      },
+      "NLinear": {
+        "best_val_mse": 15.71793270111084,
+        "steps": 27,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 19.108121871948242,
+        "steps": 58,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 314,
+          "val_samples": 78,
+          "best_val_mse": 0.06504079792648554,
+          "steps": 280
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 333,
+          "val_samples": 83,
+          "best_val_mse": 0.03263529762625694,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.06789854696641366,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.1360960186769565,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.09042987367138267,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 4,
+      "PatchTST": {
+        "best_val_mse": 0.10661174263805151,
+        "steps": 300,
+        "train_samples": 413,
+        "val_samples": 103
+      },
+      "NLinear": {
+        "best_val_mse": 10.84664249420166,
+        "steps": 52,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 11.669415473937988,
+        "steps": 58,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 317,
+          "val_samples": 79,
+          "best_val_mse": 0.03208727203309536,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 336,
+          "val_samples": 84,
+          "best_val_mse": 0.050053215585649014,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.07273299743731816,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.11855911711851756,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.10513459995854646,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 5,
+      "PatchTST": {
+        "best_val_mse": 0.12298480048775673,
+        "steps": 300,
+        "train_samples": 416,
+        "val_samples": 104
+      },
+      "NLinear": {
+        "best_val_mse": 6.003825664520264,
+        "steps": 24,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 11.25076675415039,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 320,
+          "val_samples": 80,
+          "best_val_mse": 0.023206739065547783,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 340,
+          "val_samples": 84,
+          "best_val_mse": 0.054935217214127384,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.10336817738910516,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.14541354154547056,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.13111515436321497,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 6,
+      "PatchTST": {
+        "best_val_mse": 0.07171602762537077,
+        "steps": 300,
+        "train_samples": 420,
+        "val_samples": 104
+      },
+      "NLinear": {
+        "best_val_mse": 10.39863109588623,
+        "steps": 37,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 17.92687225341797,
+        "steps": 64,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 324,
+          "val_samples": 80,
+          "best_val_mse": 0.0233139314999183,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 343,
+          "val_samples": 85,
+          "best_val_mse": 0.05739836643139521,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.08481440568963687,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.11903445422649384,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.10936563182622194,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 7,
+      "PatchTST": {
+        "best_val_mse": 0.09479067660868168,
+        "steps": 300,
+        "train_samples": 423,
+        "val_samples": 105
+      },
+      "NLinear": {
+        "best_val_mse": 2.534943103790283,
+        "steps": 22,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 10.339993476867676,
+        "steps": 54,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 327,
+          "val_samples": 81,
+          "best_val_mse": 0.018602851778268814,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.0370312063023448,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.09982373441259067,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.1529883642991384,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.11595035064965487,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 8,
+      "PatchTST": {
+        "best_val_mse": 0.2327025607228279,
+        "steps": 300,
+        "train_samples": 426,
+        "val_samples": 106
+      },
+      "NLinear": {
+        "best_val_mse": 3.7531166076660156,
+        "steps": 22,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 10.567240715026855,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 330,
+          "val_samples": 82,
+          "best_val_mse": 0.030851532705128193,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.06467943762739499,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.0956643782556057,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.14265730480353037,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.13744150009006262,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 9,
+      "PatchTST": {
+        "best_val_mse": 0.16185849625617266,
+        "steps": 300,
+        "train_samples": 429,
+        "val_samples": 107
+      },
+      "NLinear": {
+        "best_val_mse": 4.170487880706787,
+        "steps": 23,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 24.423858642578125,
+        "steps": 60,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 333,
+          "val_samples": 83,
+          "best_val_mse": 0.030726588641603787,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.08097100847711165,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.09649210174878438,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.1134670492465375,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.1486035045236349,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 10,
+      "PatchTST": {
+        "best_val_mse": 0.15936971455812454,
+        "steps": 300,
+        "train_samples": 432,
+        "val_samples": 108
+      },
+      "NLinear": {
+        "best_val_mse": 8.652420043945312,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 15.815776824951172,
+        "steps": 100,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 336,
+          "val_samples": 84,
+          "best_val_mse": 0.047667987955113254,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.08013102412223816,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.12646367276708284,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.09153605904430151,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.11506988760083914,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 11,
+      "PatchTST": {
+        "best_val_mse": 0.10718700475990772,
+        "steps": 300,
+        "train_samples": 436,
+        "val_samples": 108
+      },
+      "NLinear": {
+        "best_val_mse": 6.7896881103515625,
+        "steps": 26,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 15.20948314666748,
+        "steps": 62,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 340,
+          "val_samples": 84,
+          "best_val_mse": 0.05994660314172506,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.08491159478823344,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.12447279691696167,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.12944187223911285,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.12652896298095584,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 12,
+      "PatchTST": {
+        "best_val_mse": 0.07612137123942375,
+        "steps": 300,
+        "train_samples": 439,
+        "val_samples": 109
+      },
+      "NLinear": {
+        "best_val_mse": 7.387913227081299,
+        "steps": 60,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 21.68929100036621,
+        "steps": 74,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 343,
+          "val_samples": 85,
+          "best_val_mse": 0.05067005380988121,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.0831740361948808,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.10484489798545837,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.10764833213761449,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.08857125509530306,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 13,
+      "PatchTST": {
+        "best_val_mse": 0.204773660749197,
+        "steps": 300,
+        "train_samples": 442,
+        "val_samples": 110
+      },
+      "NLinear": {
+        "best_val_mse": 5.817535400390625,
+        "steps": 26,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 10.259808540344238,
+        "steps": 84,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.054672054635981716,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.09968909248709679,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.12448212628563245,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.11546043865382671,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 423,
+          "val_samples": 105,
+          "best_val_mse": 0.10449421359226108,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 14,
+      "PatchTST": {
+        "best_val_mse": 0.2523488439619541,
+        "steps": 300,
+        "train_samples": 445,
+        "val_samples": 111
+      },
+      "NLinear": {
+        "best_val_mse": 13.316262245178223,
+        "steps": 86,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 11.558109283447266,
+        "steps": 140,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.05367476834605137,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.11138420024265845,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.11544938385486603,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.14714308641850948,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 426,
+          "val_samples": 106,
+          "best_val_mse": 0.13313061837106943,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 15,
+      "PatchTST": {
+        "best_val_mse": 0.13996155932545662,
+        "steps": 300,
+        "train_samples": 448,
+        "val_samples": 112
+      },
+      "NLinear": {
+        "best_val_mse": 19.792804718017578,
+        "steps": 28,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 38.87035369873047,
+        "steps": 66,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.06951901720215876,
+          "steps": 275
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.09993162254492442,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.0916387683209905,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.13323593325912952,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.28319133073091507,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 16,
+      "PatchTST": {
+        "best_val_mse": 0.18502307310700417,
+        "steps": 300,
+        "train_samples": 452,
+        "val_samples": 112
+      },
+      "NLinear": {
+        "best_val_mse": 15.951774597167969,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 40.645755767822266,
+        "steps": 62,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.11182400460044543,
+          "steps": 288
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.11155701925357182,
+          "steps": 288
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.08185843005776405,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.10956083610653877,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 432,
+          "val_samples": 108,
+          "best_val_mse": 0.2824293803423643,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 17,
+      "PatchTST": {
+        "best_val_mse": 0.12363906903192401,
+        "steps": 300,
+        "train_samples": 455,
+        "val_samples": 113
+      },
+      "NLinear": {
+        "best_val_mse": 9.180872917175293,
+        "steps": 29,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 10.375201225280762,
+        "steps": 58,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.08627842366695404,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.11861201127370198,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.13811450731009245,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.09493004227988422,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 436,
+          "val_samples": 108,
+          "best_val_mse": 0.1905051004141569,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 18,
+      "PatchTST": {
+        "best_val_mse": 0.09604439791291952,
+        "steps": 300,
+        "train_samples": 458,
+        "val_samples": 114
+      },
+      "NLinear": {
+        "best_val_mse": 9.956074714660645,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 21.73255729675293,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.08808889736731847,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.12990186363458633,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.08859752863645554,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.08311790123116225,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 439,
+          "val_samples": 109,
+          "best_val_mse": 0.10259408131241798,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 19,
+      "PatchTST": {
+        "best_val_mse": 0.23284967243671417,
+        "steps": 300,
+        "train_samples": 461,
+        "val_samples": 115
+      },
+      "NLinear": {
+        "best_val_mse": 9.95487117767334,
+        "steps": 24,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 11.70495319366455,
+        "steps": 96,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.08696531876921654,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.1252249094347159,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.12195525132119656,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 423,
+          "val_samples": 105,
+          "best_val_mse": 0.13843426294624805,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 442,
+          "val_samples": 110,
+          "best_val_mse": 0.2232566960155964,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 20,
+      "PatchTST": {
+        "best_val_mse": 0.20066739432513714,
+        "steps": 300,
+        "train_samples": 464,
+        "val_samples": 116
+      },
+      "NLinear": {
+        "best_val_mse": 5.876810550689697,
+        "steps": 56,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 8.280980110168457,
+        "steps": 74,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.12027798220515251,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.10544772446155548,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.13499830942600965,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 426,
+          "val_samples": 106,
+          "best_val_mse": 0.2258999152109027,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 445,
+          "val_samples": 111,
+          "best_val_mse": 0.16743737272918224,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 21,
+      "PatchTST": {
+        "best_val_mse": 0.08164055552333593,
+        "steps": 300,
+        "train_samples": 468,
+        "val_samples": 116
+      },
+      "NLinear": {
+        "best_val_mse": 11.659714698791504,
+        "steps": 51,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 16.991228103637695,
+        "steps": 82,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.13875948203106722,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.08717728819465265,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.15540409833192825,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.14504707045853138,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 448,
+          "val_samples": 112,
+          "best_val_mse": 0.19127683714032173,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 22,
+      "PatchTST": {
+        "best_val_mse": 0.11427443567663431,
+        "steps": 300,
+        "train_samples": 471,
+        "val_samples": 117
+      },
+      "NLinear": {
+        "best_val_mse": 16.175765991210938,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 17.83497428894043,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.11595648465057214,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.09554179292172194,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.1297709234058857,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 432,
+          "val_samples": 108,
+          "best_val_mse": 0.2612435631453991,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 452,
+          "val_samples": 112,
+          "best_val_mse": 0.13207476120442152,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 23,
+      "PatchTST": {
+        "best_val_mse": 0.13033444248139858,
+        "steps": 300,
+        "train_samples": 474,
+        "val_samples": 118
+      },
+      "NLinear": {
+        "best_val_mse": 28.95966148376465,
+        "steps": 24,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 29.818178176879883,
+        "steps": 88,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.13229178761442503,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.12893228605389595,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.09260990342590958,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 436,
+          "val_samples": 108,
+          "best_val_mse": 0.18559566512703896,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 455,
+          "val_samples": 113,
+          "best_val_mse": 0.13868838548660278,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 24,
+      "PatchTST": {
+        "best_val_mse": 0.12843311578035355,
+        "steps": 300,
+        "train_samples": 477,
+        "val_samples": 119
+      },
+      "NLinear": {
+        "best_val_mse": 20.419286727905273,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 48.0700798034668,
+        "steps": 84,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.14404660339156786,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.10847803298383951,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.07952678389847279,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 439,
+          "val_samples": 109,
+          "best_val_mse": 0.2842390686273575,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 458,
+          "val_samples": 114,
+          "best_val_mse": 0.12040580622851849,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Univariate",
+      "Target": "Brent Oil",
+      "EvalSplit": "holdout",
+      "WindowId": 1,
+      "PatchTST": {
+        "best_val_mse": 0.07930038031190634,
+        "steps": 300,
+        "train_samples": 487,
+        "val_samples": 121
+      },
+      "NLinear": {
+        "best_val_mse": 5.294224739074707,
+        "steps": 29,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 12.850741386413574,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.09371060854755342,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.17192767933011055,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.15643958561122417,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 448,
+          "val_samples": 112,
+          "best_val_mse": 0.19902310892939568,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 468,
+          "val_samples": 116,
+          "best_val_mse": 0.16723336838185787,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 1,
+      "PatchTST": {
+        "best_val_mse": 0.37495389580726624,
+        "steps": 300,
+        "train_samples": 404,
+        "val_samples": 100
+      },
+      "NLinear": {
+        "best_val_mse": 13.412768363952637,
+        "steps": 25,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 80.31759643554688,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 308,
+          "val_samples": 76,
+          "best_val_mse": 0.33247507736086845,
+          "steps": 220
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 327,
+          "val_samples": 81,
+          "best_val_mse": 0.11151754856109619,
+          "steps": 242
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.5162296543518702,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.4235585331916809,
+          "steps": 288
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.48033733169237774,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 2,
+      "PatchTST": {
+        "best_val_mse": 0.5245754439383745,
+        "steps": 300,
+        "train_samples": 407,
+        "val_samples": 101
+      },
+      "NLinear": {
+        "best_val_mse": 24.951581954956055,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 43.2361946105957,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 311,
+          "val_samples": 77,
+          "best_val_mse": 0.3775552262862523,
+          "steps": 220
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 330,
+          "val_samples": 82,
+          "best_val_mse": 0.11333269874254863,
+          "steps": 242
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.6494060059388479,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.4201206962267558,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.4165892278154691,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 3,
+      "PatchTST": {
+        "best_val_mse": 0.2767187934368849,
+        "steps": 273,
+        "train_samples": 410,
+        "val_samples": 102
+      },
+      "NLinear": {
+        "best_val_mse": 12.671928405761719,
+        "steps": 22,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 88.32865142822266,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 314,
+          "val_samples": 78,
+          "best_val_mse": 0.3934338291486104,
+          "steps": 220
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 333,
+          "val_samples": 83,
+          "best_val_mse": 0.2483278512954712,
+          "steps": 297
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.45646141469478607,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.25614652285973233,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.2163510003592819,
+          "steps": 273
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 4,
+      "PatchTST": {
+        "best_val_mse": 0.23021248658187687,
+        "steps": 273,
+        "train_samples": 413,
+        "val_samples": 103
+      },
+      "NLinear": {
+        "best_val_mse": 21.13096046447754,
+        "steps": 29,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 52.9455451965332,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 317,
+          "val_samples": 79,
+          "best_val_mse": 0.3909972806771596,
+          "steps": 220
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 336,
+          "val_samples": 84,
+          "best_val_mse": 0.34947917362054187,
+          "steps": 253
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.559318944811821,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.29622601469357807,
+          "steps": 252
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.2524633826687932,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 5,
+      "PatchTST": {
+        "best_val_mse": 0.22675083577632904,
+        "steps": 273,
+        "train_samples": 416,
+        "val_samples": 104
+      },
+      "NLinear": {
+        "best_val_mse": 9.552740097045898,
+        "steps": 37,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 33.765499114990234,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 320,
+          "val_samples": 80,
+          "best_val_mse": 0.2518598586320877,
+          "steps": 220
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 340,
+          "val_samples": 84,
+          "best_val_mse": 0.5193836688995361,
+          "steps": 253
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.4010978539784749,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.445111741622289,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.3542048102244735,
+          "steps": 273
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 6,
+      "PatchTST": {
+        "best_val_mse": 0.22979690320789814,
+        "steps": 300,
+        "train_samples": 420,
+        "val_samples": 104
+      },
+      "NLinear": {
+        "best_val_mse": 11.032238960266113,
+        "steps": 27,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 206.2035369873047,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 324,
+          "val_samples": 80,
+          "best_val_mse": 0.11935667196909587,
+          "steps": 242
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 343,
+          "val_samples": 85,
+          "best_val_mse": 0.373629334072272,
+          "steps": 253
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.3869127730528514,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.24148163199424744,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.562892809510231,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 7,
+      "PatchTST": {
+        "best_val_mse": 0.23043092153966427,
+        "steps": 300,
+        "train_samples": 423,
+        "val_samples": 105
+      },
+      "NLinear": {
+        "best_val_mse": 9.790260314941406,
+        "steps": 37,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 46.01607131958008,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 327,
+          "val_samples": 81,
+          "best_val_mse": 0.10225743800401688,
+          "steps": 253
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.6135747134685516,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.48706498742103577,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.41027111808458966,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.3553055990487337,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 8,
+      "PatchTST": {
+        "best_val_mse": 0.3982672579586506,
+        "steps": 294,
+        "train_samples": 426,
+        "val_samples": 106
+      },
+      "NLinear": {
+        "best_val_mse": 8.982999801635742,
+        "steps": 28,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 94.0267105102539,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 330,
+          "val_samples": 82,
+          "best_val_mse": 0.14953699707984924,
+          "steps": 242
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.4524027903874715,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.2686309764782588,
+          "steps": 264
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.3702261298894882,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.3112986534833908,
+          "steps": 273
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 9,
+      "PatchTST": {
+        "best_val_mse": 0.28867850080132484,
+        "steps": 300,
+        "train_samples": 429,
+        "val_samples": 107
+      },
+      "NLinear": {
+        "best_val_mse": 8.039663314819336,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 22.74620246887207,
+        "steps": 46,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 333,
+          "val_samples": 83,
+          "best_val_mse": 0.14644761631886163,
+          "steps": 264
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.5314197093248367,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.5173517564932505,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.35366173181682825,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.5874775890260935,
+          "steps": 273
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 10,
+      "PatchTST": {
+        "best_val_mse": 0.3832933008670807,
+        "steps": 300,
+        "train_samples": 432,
+        "val_samples": 108
+      },
+      "NLinear": {
+        "best_val_mse": 7.0028486251831055,
+        "steps": 27,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 34.82545471191406,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 336,
+          "val_samples": 84,
+          "best_val_mse": 0.3673745145400365,
+          "steps": 242
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.5136577486991882,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.39048687865336734,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.3898049546405673,
+          "steps": 299
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.4069821760058403,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 11,
+      "PatchTST": {
+        "best_val_mse": 0.17534815706312656,
+        "steps": 294,
+        "train_samples": 436,
+        "val_samples": 108
+      },
+      "NLinear": {
+        "best_val_mse": 11.365540504455566,
+        "steps": 26,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 15.9916410446167,
+        "steps": 96,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 340,
+          "val_samples": 84,
+          "best_val_mse": 0.6858393823107084,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.42373931407928467,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.5711149275302887,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.3851559432223439,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.2436230070888996,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 12,
+      "PatchTST": {
+        "best_val_mse": 0.30896884948015213,
+        "steps": 294,
+        "train_samples": 439,
+        "val_samples": 109
+      },
+      "NLinear": {
+        "best_val_mse": 4.567452907562256,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 121.7110595703125,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 343,
+          "val_samples": 85,
+          "best_val_mse": 0.5424697746833166,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.5232293407122294,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.36536259204149246,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.29360850527882576,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.23741932958364487,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 13,
+      "PatchTST": {
+        "best_val_mse": 0.29179976880550385,
+        "steps": 294,
+        "train_samples": 442,
+        "val_samples": 110
+      },
+      "NLinear": {
+        "best_val_mse": 15.10701847076416,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 21.415998458862305,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.6008186837037405,
+          "steps": 253
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.26745087405045825,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.45346734424432117,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.2659343145787716,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 423,
+          "val_samples": 105,
+          "best_val_mse": 0.2890443876385689,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 14,
+      "PatchTST": {
+        "best_val_mse": 0.2842393033206463,
+        "steps": 300,
+        "train_samples": 445,
+        "val_samples": 111
+      },
+      "NLinear": {
+        "best_val_mse": 29.225133895874023,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 24.24468994140625,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.5825661917527517,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.3927681843439738,
+          "steps": 288
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.37219903866449994,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.5295728500932455,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 426,
+          "val_samples": 106,
+          "best_val_mse": 0.26712848991155624,
+          "steps": 294
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 15,
+      "PatchTST": {
+        "best_val_mse": 0.20840229280292988,
+        "steps": 300,
+        "train_samples": 448,
+        "val_samples": 112
+      },
+      "NLinear": {
+        "best_val_mse": 11.813572883605957,
+        "steps": 38,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 40.538795471191406,
+        "steps": 48,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.4089216391245524,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.3144090622663498,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.3277392312884331,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.28778246883302927,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.4433696120977402,
+          "steps": 294
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 16,
+      "PatchTST": {
+        "best_val_mse": 0.11399082560092211,
+        "steps": 300,
+        "train_samples": 452,
+        "val_samples": 112
+      },
+      "NLinear": {
+        "best_val_mse": 7.858306884765625,
+        "steps": 29,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 59.365543365478516,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.5691804985205332,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.4216446777184804,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.29844763688743114,
+          "steps": 286
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.26290156738832593,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 432,
+          "val_samples": 108,
+          "best_val_mse": 0.2355334684252739,
+          "steps": 294
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 17,
+      "PatchTST": {
+        "best_val_mse": 0.21324019320309162,
+        "steps": 300,
+        "train_samples": 455,
+        "val_samples": 113
+      },
+      "NLinear": {
+        "best_val_mse": 5.059964656829834,
+        "steps": 48,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 29.44478416442871,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.43777787685394287,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.3063111851612727,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.3268284033983946,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.2824291065335274,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 436,
+          "val_samples": 108,
+          "best_val_mse": 0.3570391722023487,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 18,
+      "PatchTST": {
+        "best_val_mse": 0.24847735464572906,
+        "steps": 300,
+        "train_samples": 458,
+        "val_samples": 114
+      },
+      "NLinear": {
+        "best_val_mse": 10.26098346710205,
+        "steps": 29,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 33.09059143066406,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.534463127454122,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.5622871071100235,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.30510419607162476,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.21651804260909557,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 439,
+          "val_samples": 109,
+          "best_val_mse": 0.35175101831555367,
+          "steps": 294
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 19,
+      "PatchTST": {
+        "best_val_mse": 0.2203287836164236,
+        "steps": 300,
+        "train_samples": 461,
+        "val_samples": 115
+      },
+      "NLinear": {
+        "best_val_mse": 13.307416915893555,
+        "steps": 26,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 14.092689514160156,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.37974336246649426,
+          "steps": 276
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.3268022686243057,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.3817267417907715,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 423,
+          "val_samples": 105,
+          "best_val_mse": 0.3162381462752819,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 442,
+          "val_samples": 110,
+          "best_val_mse": 0.37134500965476036,
+          "steps": 294
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 20,
+      "PatchTST": {
+        "best_val_mse": 0.25732711143791676,
+        "steps": 300,
+        "train_samples": 464,
+        "val_samples": 116
+      },
+      "NLinear": {
+        "best_val_mse": 21.71904945373535,
+        "steps": 26,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 36.61503601074219,
+        "steps": 50,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.4612281595667203,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.3865283206105232,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.5297548212110996,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 426,
+          "val_samples": 106,
+          "best_val_mse": 0.39011625200510025,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 445,
+          "val_samples": 111,
+          "best_val_mse": 0.31094192899763584,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 21,
+      "PatchTST": {
+        "best_val_mse": 0.16024506837129593,
+        "steps": 300,
+        "train_samples": 468,
+        "val_samples": 116
+      },
+      "NLinear": {
+        "best_val_mse": 20.948944091796875,
+        "steps": 70,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 17.648359298706055,
+        "steps": 68,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.3572329084078471,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.42559927701950073,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.5117523837834597,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.19013864547014236,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 448,
+          "val_samples": 112,
+          "best_val_mse": 0.30034368485212326,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 22,
+      "PatchTST": {
+        "best_val_mse": 0.1313194092363119,
+        "steps": 300,
+        "train_samples": 471,
+        "val_samples": 117
+      },
+      "NLinear": {
+        "best_val_mse": 13.449020385742188,
+        "steps": 40,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 20.015607833862305,
+        "steps": 46,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.45269152025381726,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.5467852093279362,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.29864110238850117,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 432,
+          "val_samples": 108,
+          "best_val_mse": 0.22008074913173914,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 452,
+          "val_samples": 112,
+          "best_val_mse": 0.19134581089019775,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 23,
+      "PatchTST": {
+        "best_val_mse": 0.07917141728103161,
+        "steps": 300,
+        "train_samples": 474,
+        "val_samples": 118
+      },
+      "NLinear": {
+        "best_val_mse": 30.51736831665039,
+        "steps": 35,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 48.95024108886719,
+        "steps": 96,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.40538282692432404,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.33962090965360403,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.2741912645287812,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 436,
+          "val_samples": 108,
+          "best_val_mse": 0.4476490281522274,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 455,
+          "val_samples": 113,
+          "best_val_mse": 0.20444227568805218,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 24,
+      "PatchTST": {
+        "best_val_mse": 0.19138555973768234,
+        "steps": 300,
+        "train_samples": 477,
+        "val_samples": 119
+      },
+      "NLinear": {
+        "best_val_mse": 17.68535804748535,
+        "steps": 33,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 20.110759735107422,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.3276352683703105,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.29691136814653873,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.3434776235371828,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 439,
+          "val_samples": 109,
+          "best_val_mse": 0.24065572209656239,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 458,
+          "val_samples": 114,
+          "best_val_mse": 0.20793321449309587,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "WTI Oil",
+      "EvalSplit": "holdout",
+      "WindowId": 1,
+      "PatchTST": {
+        "best_val_mse": 0.10354777611792088,
+        "steps": 300,
+        "train_samples": 487,
+        "val_samples": 121
+      },
+      "NLinear": {
+        "best_val_mse": 11.013997077941895,
+        "steps": 50,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 19.723859786987305,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.2687967447564006,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.3646341282874346,
+          "steps": 286
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.18603243492543697,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 448,
+          "val_samples": 112,
+          "best_val_mse": 0.21204173751175404,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 468,
+          "val_samples": 116,
+          "best_val_mse": 0.1752969976514578,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 1,
+      "PatchTST": {
+        "best_val_mse": 0.3237630035728216,
+        "steps": 300,
+        "train_samples": 404,
+        "val_samples": 100
+      },
+      "NLinear": {
+        "best_val_mse": 19.83432960510254,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 55.81544876098633,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 308,
+          "val_samples": 76,
+          "best_val_mse": 0.29557125891248387,
+          "steps": 220
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 327,
+          "val_samples": 81,
+          "best_val_mse": 0.12835085888703665,
+          "steps": 264
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.4755629897117615,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.23777399957180023,
+          "steps": 288
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.2558317656318347,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 2,
+      "PatchTST": {
+        "best_val_mse": 0.33339744061231613,
+        "steps": 300,
+        "train_samples": 407,
+        "val_samples": 101
+      },
+      "NLinear": {
+        "best_val_mse": 14.413176536560059,
+        "steps": 24,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 192.56553649902344,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 311,
+          "val_samples": 77,
+          "best_val_mse": 0.324560321867466,
+          "steps": 270
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 330,
+          "val_samples": 82,
+          "best_val_mse": 0.24767373005549112,
+          "steps": 231
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.37376387417316437,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.30967144419749576,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.3614812393983205,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 3,
+      "PatchTST": {
+        "best_val_mse": 0.2522081593051553,
+        "steps": 273,
+        "train_samples": 410,
+        "val_samples": 102
+      },
+      "NLinear": {
+        "best_val_mse": 19.266122817993164,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 156.13673400878906,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 314,
+          "val_samples": 78,
+          "best_val_mse": 0.4144731859366099,
+          "steps": 210
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 333,
+          "val_samples": 83,
+          "best_val_mse": 0.1521978204449018,
+          "steps": 253
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.39704808592796326,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.3000970706343651,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.5600603334605694,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 4,
+      "PatchTST": {
+        "best_val_mse": 0.24698988161981106,
+        "steps": 273,
+        "train_samples": 413,
+        "val_samples": 103
+      },
+      "NLinear": {
+        "best_val_mse": 22.045394897460938,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 125.97840118408203,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 317,
+          "val_samples": 79,
+          "best_val_mse": 0.23723394672075906,
+          "steps": 250
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 336,
+          "val_samples": 84,
+          "best_val_mse": 0.26477184643348056,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.23707744479179382,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.24381687492132187,
+          "steps": 252
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.40744150057435036,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 5,
+      "PatchTST": {
+        "best_val_mse": 0.3194371610879898,
+        "steps": 300,
+        "train_samples": 416,
+        "val_samples": 104
+      },
+      "NLinear": {
+        "best_val_mse": 13.35419750213623,
+        "steps": 26,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 96.23389434814453,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 320,
+          "val_samples": 80,
+          "best_val_mse": 0.22488812108834585,
+          "steps": 230
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 340,
+          "val_samples": 84,
+          "best_val_mse": 0.3594366932908694,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.390527884165446,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.23071886350711188,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.23592103458940983,
+          "steps": 273
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 6,
+      "PatchTST": {
+        "best_val_mse": 0.1897101541981101,
+        "steps": 300,
+        "train_samples": 420,
+        "val_samples": 104
+      },
+      "NLinear": {
+        "best_val_mse": 16.740785598754883,
+        "steps": 47,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 17.00575065612793,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 324,
+          "val_samples": 80,
+          "best_val_mse": 0.09461299950877826,
+          "steps": 253
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 343,
+          "val_samples": 85,
+          "best_val_mse": 0.5778129597504934,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.34505225718021393,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.2683093200127284,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.2467066403478384,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 7,
+      "PatchTST": {
+        "best_val_mse": 0.249096374027431,
+        "steps": 300,
+        "train_samples": 423,
+        "val_samples": 105
+      },
+      "NLinear": {
+        "best_val_mse": 4.339926719665527,
+        "steps": 21,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 18.676809310913086,
+        "steps": 46,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 327,
+          "val_samples": 81,
+          "best_val_mse": 0.0904380405942599,
+          "steps": 264
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.49158890048662823,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.37376288572947186,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.3266209488113721,
+          "steps": 252
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.25132276117801666,
+          "steps": 273
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 8,
+      "PatchTST": {
+        "best_val_mse": 0.20921829342842102,
+        "steps": 294,
+        "train_samples": 426,
+        "val_samples": 106
+      },
+      "NLinear": {
+        "best_val_mse": 15.115235328674316,
+        "steps": 23,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 53.423160552978516,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 330,
+          "val_samples": 82,
+          "best_val_mse": 0.15001957615216574,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.4341064343849818,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.3801066478093465,
+          "steps": 264
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.3343338444828987,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.2666507326066494,
+          "steps": 273
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 9,
+      "PatchTST": {
+        "best_val_mse": 0.1911538876593113,
+        "steps": 294,
+        "train_samples": 429,
+        "val_samples": 107
+      },
+      "NLinear": {
+        "best_val_mse": 28.202896118164062,
+        "steps": 55,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 363.5898132324219,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 333,
+          "val_samples": 83,
+          "best_val_mse": 0.15003427863121033,
+          "steps": 253
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.41097872455914813,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.37725113828976947,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.34915597969666123,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.38320722058415413,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 10,
+      "PatchTST": {
+        "best_val_mse": 0.2696859613060951,
+        "steps": 300,
+        "train_samples": 432,
+        "val_samples": 108
+      },
+      "NLinear": {
+        "best_val_mse": 16.746355056762695,
+        "steps": 47,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 33.4557991027832,
+        "steps": 46,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 336,
+          "val_samples": 84,
+          "best_val_mse": 0.2880160187681516,
+          "steps": 242
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.3693794012069702,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.22946514934301376,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.5021384246647358,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.24469287670217454,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 11,
+      "PatchTST": {
+        "best_val_mse": 0.38260264601558447,
+        "steps": 300,
+        "train_samples": 436,
+        "val_samples": 108
+      },
+      "NLinear": {
+        "best_val_mse": 18.454992294311523,
+        "steps": 27,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 36.65066146850586,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 340,
+          "val_samples": 84,
+          "best_val_mse": 0.422429824868838,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.4854435424009959,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.25129904846350354,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.24979229643940926,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.24200138403102756,
+          "steps": 273
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 12,
+      "PatchTST": {
+        "best_val_mse": 0.2678782343864441,
+        "steps": 294,
+        "train_samples": 439,
+        "val_samples": 109
+      },
+      "NLinear": {
+        "best_val_mse": 7.850346088409424,
+        "steps": 70,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 20.27558708190918,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 343,
+          "val_samples": 85,
+          "best_val_mse": 0.6036283125480016,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.24365676939487457,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.2910498430331548,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.24072066321969032,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.1806529425084591,
+          "steps": 294
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 13,
+      "PatchTST": {
+        "best_val_mse": 0.36865689884871244,
+        "steps": 294,
+        "train_samples": 442,
+        "val_samples": 110
+      },
+      "NLinear": {
+        "best_val_mse": 21.843313217163086,
+        "steps": 32,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 46.46144104003906,
+        "steps": 110,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 346,
+          "val_samples": 86,
+          "best_val_mse": 0.5361179113388062,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.3192020058631897,
+          "steps": 276
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.5077849427858988,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.24936161749064922,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 423,
+          "val_samples": 105,
+          "best_val_mse": 0.282968008890748,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 14,
+      "PatchTST": {
+        "best_val_mse": 0.1906317686662078,
+        "steps": 294,
+        "train_samples": 445,
+        "val_samples": 111
+      },
+      "NLinear": {
+        "best_val_mse": 24.121768951416016,
+        "steps": 66,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 46.30228805541992,
+        "steps": 46,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 349,
+          "val_samples": 87,
+          "best_val_mse": 0.4819930891195933,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.2664109915494919,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.2554484059413274,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.49064070731401443,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 426,
+          "val_samples": 106,
+          "best_val_mse": 0.32825758680701256,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 15,
+      "PatchTST": {
+        "best_val_mse": 0.24689030274748802,
+        "steps": 300,
+        "train_samples": 448,
+        "val_samples": 112
+      },
+      "NLinear": {
+        "best_val_mse": 8.407980918884277,
+        "steps": 28,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 28.1204833984375,
+        "steps": 72,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 352,
+          "val_samples": 88,
+          "best_val_mse": 0.4125089148680369,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.275752787788709,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.2890546955168247,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.2700554858893156,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.4312179572880268,
+          "steps": 294
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 16,
+      "PatchTST": {
+        "best_val_mse": 0.21775742806494236,
+        "steps": 300,
+        "train_samples": 452,
+        "val_samples": 112
+      },
+      "NLinear": {
+        "best_val_mse": 11.509913444519043,
+        "steps": 25,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 199.49920654296875,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 356,
+          "val_samples": 88,
+          "best_val_mse": 0.305738886197408,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.33770768344402313,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.4036804735660553,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.236830223351717,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 432,
+          "val_samples": 108,
+          "best_val_mse": 0.4880826696753502,
+          "steps": 294
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 17,
+      "PatchTST": {
+        "best_val_mse": 0.22283285297453403,
+        "steps": 300,
+        "train_samples": 455,
+        "val_samples": 113
+      },
+      "NLinear": {
+        "best_val_mse": 15.339350700378418,
+        "steps": 30,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 23.519195556640625,
+        "steps": 44,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 359,
+          "val_samples": 89,
+          "best_val_mse": 0.3799163003762563,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.30487507085005444,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.31921806652098894,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.2352221943438053,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 436,
+          "val_samples": 108,
+          "best_val_mse": 0.259203415364027,
+          "steps": 294
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 18,
+      "PatchTST": {
+        "best_val_mse": 0.32446347549557686,
+        "steps": 300,
+        "train_samples": 458,
+        "val_samples": 114
+      },
+      "NLinear": {
+        "best_val_mse": 18.216724395751953,
+        "steps": 149,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 21.0836181640625,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 362,
+          "val_samples": 90,
+          "best_val_mse": 0.47076236208279926,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.3248816877603531,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.1802585469558835,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.39282562397420406,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 439,
+          "val_samples": 109,
+          "best_val_mse": 0.2970428504049778,
+          "steps": 294
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 19,
+      "PatchTST": {
+        "best_val_mse": 0.218275249004364,
+        "steps": 300,
+        "train_samples": 461,
+        "val_samples": 115
+      },
+      "NLinear": {
+        "best_val_mse": 17.792991638183594,
+        "steps": 23,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 13.778742790222168,
+        "steps": 48,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 365,
+          "val_samples": 91,
+          "best_val_mse": 0.41820280253887177,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 384,
+          "val_samples": 96,
+          "best_val_mse": 0.3160358543197314,
+          "steps": 252
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 404,
+          "val_samples": 100,
+          "best_val_mse": 0.25548126734793186,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 423,
+          "val_samples": 105,
+          "best_val_mse": 0.21764405071735382,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 442,
+          "val_samples": 110,
+          "best_val_mse": 0.3868632703088224,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 20,
+      "PatchTST": {
+        "best_val_mse": 0.16048848815262318,
+        "steps": 300,
+        "train_samples": 464,
+        "val_samples": 116
+      },
+      "NLinear": {
+        "best_val_mse": 24.03316307067871,
+        "steps": 28,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 26.0635929107666,
+        "steps": 70,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 368,
+          "val_samples": 92,
+          "best_val_mse": 0.38523320853710175,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 388,
+          "val_samples": 96,
+          "best_val_mse": 0.3871180017789205,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 407,
+          "val_samples": 101,
+          "best_val_mse": 0.3696146048605442,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 426,
+          "val_samples": 106,
+          "best_val_mse": 0.2049259915947914,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 445,
+          "val_samples": 111,
+          "best_val_mse": 0.47648522816598415,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 21,
+      "PatchTST": {
+        "best_val_mse": 0.1415336225181818,
+        "steps": 300,
+        "train_samples": 468,
+        "val_samples": 116
+      },
+      "NLinear": {
+        "best_val_mse": 12.711155891418457,
+        "steps": 36,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 70.0735855102539,
+        "steps": 48,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 372,
+          "val_samples": 92,
+          "best_val_mse": 0.34130333364009857,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.19939046789659187,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.23200100986286998,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.3075004518032074,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 448,
+          "val_samples": 112,
+          "best_val_mse": 0.3169374540448189,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 22,
+      "PatchTST": {
+        "best_val_mse": 0.12642727605998516,
+        "steps": 300,
+        "train_samples": 471,
+        "val_samples": 117
+      },
+      "NLinear": {
+        "best_val_mse": 12.325778007507324,
+        "steps": 27,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 20.186006546020508,
+        "steps": 56,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 375,
+          "val_samples": 93,
+          "best_val_mse": 0.3542717943588893,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 394,
+          "val_samples": 98,
+          "best_val_mse": 0.2312949225306511,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 413,
+          "val_samples": 103,
+          "best_val_mse": 0.2877735272049904,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 432,
+          "val_samples": 108,
+          "best_val_mse": 0.309638075530529,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 452,
+          "val_samples": 112,
+          "best_val_mse": 0.36157250963151455,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 23,
+      "PatchTST": {
+        "best_val_mse": 0.13842232711613178,
+        "steps": 300,
+        "train_samples": 474,
+        "val_samples": 118
+      },
+      "NLinear": {
+        "best_val_mse": 46.6011848449707,
+        "steps": 26,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 34.98786926269531,
+        "steps": 42,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 378,
+          "val_samples": 94,
+          "best_val_mse": 0.24562898526589075,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 397,
+          "val_samples": 99,
+          "best_val_mse": 0.24580678809434175,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 416,
+          "val_samples": 104,
+          "best_val_mse": 0.3322406355291605,
+          "steps": 273
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 436,
+          "val_samples": 108,
+          "best_val_mse": 0.19733697641640902,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 455,
+          "val_samples": 113,
+          "best_val_mse": 0.23970801755785942,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "tscv",
+      "WindowId": 24,
+      "PatchTST": {
+        "best_val_mse": 0.1884332336485386,
+        "steps": 300,
+        "train_samples": 477,
+        "val_samples": 119
+      },
+      "NLinear": {
+        "best_val_mse": 25.455081939697266,
+        "steps": 31,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 38.69215393066406,
+        "steps": 46,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 381,
+          "val_samples": 95,
+          "best_val_mse": 0.37155196567376453,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 400,
+          "val_samples": 100,
+          "best_val_mse": 0.32798413559794426,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 420,
+          "val_samples": 104,
+          "best_val_mse": 0.24515121709555387,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 439,
+          "val_samples": 109,
+          "best_val_mse": 0.15555981919169426,
+          "steps": 294
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 458,
+          "val_samples": 114,
+          "best_val_mse": 0.2591933235526085,
+          "steps": 300
+        }
+      ]
+    },
+    {
+      "Setting": "Multivariate+Exogenous",
+      "Target": "Brent Oil",
+      "EvalSplit": "holdout",
+      "WindowId": 1,
+      "PatchTST": {
+        "best_val_mse": 0.10449016653001308,
+        "steps": 300,
+        "train_samples": 487,
+        "val_samples": 121
+      },
+      "NLinear": {
+        "best_val_mse": 7.987235069274902,
+        "steps": 38,
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "iTransformer": {
+        "best_val_mse": 22.347740173339844,
+        "steps": 48,
+        "train_samples": 96,
+        "val_samples": 24
+      },
+      "XGBoost": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "LightGBM": {
+        "train_samples": 58,
+        "val_samples": 14
+      },
+      "OOFPoints": 120,
+      "InnerSplits": [
+        {
+          "inner_split_id": 1,
+          "train_samples": 391,
+          "val_samples": 97,
+          "best_val_mse": 0.2938843408774119,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 2,
+          "train_samples": 410,
+          "val_samples": 102,
+          "best_val_mse": 0.2603857768699527,
+          "steps": 286
+        },
+        {
+          "inner_split_id": 3,
+          "train_samples": 429,
+          "val_samples": 107,
+          "best_val_mse": 0.31257745157927275,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 4,
+          "train_samples": 448,
+          "val_samples": 112,
+          "best_val_mse": 0.4662279337644577,
+          "steps": 300
+        },
+        {
+          "inner_split_id": 5,
+          "train_samples": 468,
+          "val_samples": 116,
+          "best_val_mse": 0.0857768920250237,
+          "steps": 300
+        }
+      ]
+    }
+  ]
+}
