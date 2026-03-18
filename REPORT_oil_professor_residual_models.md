@@ -157,76 +157,46 @@
 
 ---
 
-| 대표 실험 | Bench-mark (%) | 실험모델 (%) | 증감 (%p) |
-| --- | --- | --- | --- |
-| `NLinear` 대표: `ExpSmoothing -> +NLinear` | 6.53 | 1.82 | -4.71 |
-| `LightGBM` 대표: `+NLinear -> +LightGBM RoR` | 1.82 | 1.47 | -0.35 |
-| `NLinear` 반례: `PatchTST -> +NLinear` | 1.60 | 2.21 | +0.61 |
-| `XGBoost` legacy | 기록 미보존 | 기록 미보존 | MAPE 비교 불가 |
+발표용 표는 아래처럼 `Baseline`과 `Residual Model`을 분리해 두는 편이 좋다.  
+이렇게 두면 같은 baseline에서 `residual 미적용`과 `residual 적용` 결과를 한 표 안에서 바로 비교할 수 있다.
+
+| Target | Baseline | Residual Model | Eval Split | RMSE | MAE | MAPE (%) | NRMSE (%) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Brent Oil | ExpSmoothing | `-` | Single Test | 4.1754 | 4.0857 | 6.5276 | 6.6601 |
+| Brent Oil | ExpSmoothing | `NLinear` | Single Test | 1.2648 | 1.1353 | 1.8192 | 2.0175 |
+| Brent Oil | ExpSmoothing + NLinear | `-` | Single Test | 1.2648 | 1.1353 | 1.8192 | 2.0175 |
+| Brent Oil | ExpSmoothing + NLinear | `LightGBM RoR` | Single Test | 1.2275 | 0.9144 | 1.4708 | 1.9580 |
+| Brent Oil | PatchTST | `-` | Single Test | 1.5339 | 1.0027 | 1.5997 | 2.4467 |
+| Brent Oil | PatchTST | `NLinear` | Single Test | 1.9251 | 1.3985 | 2.2132 | 3.0707 |
+| Brent Oil | Persistence / Random Walk | `-` | Legacy Test | 1.1227 | 기록 미보존 | 기록 미보존 | 기록 미보존 |
+| Brent Oil | Persistence / Random Walk | `LightGBM + XGBoost ensemble` | Legacy Test | 1.1579 | 기록 미보존 | 기록 미보존 | 기록 미보존 |
 
 ### 04-02. 세부 결과
 
 ---
 
-- **Test Set Metric 1: NLinear 대표 결과**
-  - TestSet 기간: `2025-10-27 ~ 2026-01-12` (총 `12주`)
+- **Baseline 대비 residual 투입 전후 비교표**
 
-    |  | RMSE | MAPE (%) | nRMSE (%) | MAE | R2 |
-    | --- | --- | --- | --- | --- | --- |
-    | Bench-mark: ExpSmoothing | 4.1754 | 6.5276 | 6.6601 | 4.0857 | -8.4774 |
-    | 실험모델: Baseline + NLinear | 1.2648 | 1.8192 | 2.0175 | 1.1353 | 0.1304 |
+  | 비교쌍 | Target | Baseline | Residual Model | RMSE Before | RMSE After | MAPE Before (%) | MAPE After (%) | ΔMAPE (%p) | 1차 판단 |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | `ExpSmoothing -> NLinear` | Brent Oil | ExpSmoothing | NLinear | 4.1754 | 1.2648 | 6.5276 | 1.8192 | -4.7084 | **강한 개선** |
+  | `ExpSmoothing + NLinear -> LightGBM RoR` | Brent Oil | ExpSmoothing + NLinear | LightGBM RoR | 1.2648 | 1.2275 | 1.8192 | 1.4708 | -0.3484 | 단일 분할 소폭 개선 |
+  | `PatchTST -> NLinear` | Brent Oil | PatchTST | NLinear | 1.5339 | 1.9251 | 1.5997 | 2.2132 | +0.6135 | **악화** |
+  | `Persistence -> LGB+XGB ensemble` | Brent Oil | Persistence / Random Walk | LightGBM + XGBoost ensemble | 1.1227 | 1.1579 | 기록 미보존 | 기록 미보존 | 비교 불가 | Test 악화 |
 
-  - 판단:
-    - 최신 교수님용 패키지에서 **가장 강한 잔차보정 성공 사례**
-    - DM 검정 `p = 1.08e-06`으로 통계적 설득력도 가장 높음
+- **rolling-origin 평균 비교표**
 
-- **Test Set Metric 2: LightGBM 대표 결과**
-  - TestSet 기간: `2025-10-27 ~ 2026-01-12` (총 `12주`)
+  | Target | Baseline | Residual Model | Eval Split | RMSE | MAE | MAPE (%) | NRMSE (%) |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | Brent Oil | ExpSmoothing + NLinear | `-` | Rolling Mean | 2.4743 | 2.0201 | 2.9664 | 3.6189 |
+  | Brent Oil | ExpSmoothing + NLinear | `LightGBM RoR` | Rolling Mean | 2.5089 | 2.0283 | 2.9828 | 3.6746 |
 
-    |  | RMSE | MAPE (%) | nRMSE (%) | MAE | R2 |
-    | --- | --- | --- | --- | --- | --- |
-    | Bench-mark: ExpSmoothing + NLinear | 1.2648 | 1.8192 | 2.0175 | 1.1353 | 0.1304 |
-    | 실험모델: +LightGBM RoR | 1.2275 | 1.4708 | 1.9580 | 0.9144 | 0.1809 |
-
-  - rolling-origin 평균 결과:
-
-    |  | Mean Test RMSE | Mean Test MAPE (%) | Mean Test nRMSE (%) | Mean Test MAE | Mean Test R2 |
-    | --- | --- | --- | --- | --- | --- |
-    | Bench-mark: ExpSmoothing + NLinear | 2.4743 | 2.9664 | 3.6189 | 2.0201 | 0.0341 |
-    | 실험모델: +LightGBM RoR | 2.5089 | 2.9828 | 3.6746 | 2.0283 | -0.0218 |
-
-  - 판단:
-    - 단일 분할에서는 개선
-    - 하지만 rolling-origin 평균과 DM 검정 `p = 0.8697` 기준으로는 **재현성이 약함**
-
-- **Test Set Metric 3: PatchTST 위 NLinear 반례**
-  - TestSet 기간: `2025-10-27 ~ 2026-01-12` (총 `12주`)
-
-    |  | RMSE | MAPE (%) | nRMSE (%) | MAE | R2 |
-    | --- | --- | --- | --- | --- | --- |
-    | Bench-mark: PatchTST | 1.5339 | 1.5997 | 2.4467 | 1.0027 | -0.2791 |
-    | 실험모델: PatchTST + NLinear | 1.9251 | 2.2132 | 3.0707 | 1.3985 | -1.0147 |
-
-  - 판단:
-    - `NLinear`가 모든 baseline 위에서 자동으로 좋아지는 것은 아님
-    - 발표에서는 `NLinear 자체가 무조건 우수`가 아니라, `ExpSmoothing 계열 residual에서 특히 강했다`로 정리하는 편이 정확함
-
-- **Test Set Metric 4: XGBoost legacy 참고 결과**
-  - TestSet 기간: `2025-10-27 ~ 2026-01-12` (총 `12주`)
-
-    |  | RMSE | MAPE (%) | MAE | R2 |
-    | --- | --- | --- | --- | --- |
-    | Bench-mark: Persistence / Random Walk | 1.1227 | 기록 미보존 | 기록 미보존 | 기록 미보존 |
-    | 실험모델: LGB + XGB weighted residual ensemble | 1.1579 | 기록 미보존 | 기록 미보존 | 기록 미보존 |
-
-  - 추가 로그:
-    - OOF RMSE(change): `LGB = 2.7003`, `XGB = 2.7221`
-    - Validation RMSE(change): `LGB = 1.8265`, `XGB = 1.7777`
-    - Ensemble weight: `LGB = 0.493`, `XGB = 0.507`
-
-  - 판단:
-    - 현재 남아 있는 evidence만 보면, `XGBoost`는 최신 발표용 핵심 결과로 쓰기 어렵다
-    - `과거 exploratory residual ensemble 시도` 정도로 낮춰서 언급하는 것이 안전함
+- **해석**
+  - `ExpSmoothing -> NLinear`가 최신 교수님용 패키지에서 가장 강한 잔차보정 성공 사례다.
+  - `ExpSmoothing -> NLinear`는 DM 검정 `p = 1.08e-06`으로 통계적 설득력도 가장 높다.
+  - `LightGBM RoR`는 단일 Test split에서는 좋아졌지만, rolling-origin 평균과 DM 검정 `p = 0.8697` 기준으로는 재현성이 약하다.
+  - `PatchTST -> NLinear`는 오히려 악화되어, `NLinear`가 모든 baseline에서 자동으로 좋아지는 것은 아님을 보여준다.
+  - `XGBoost`는 standalone 최신 결과표가 없고 legacy ensemble 로그만 남아 있어, 발표 본문에서는 보조 참고로만 쓰는 것이 안전하다.
 
 # 05. 결론 및 얻게 된 인사이트
 
