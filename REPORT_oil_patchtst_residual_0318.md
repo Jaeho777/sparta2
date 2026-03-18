@@ -196,6 +196,8 @@
 - **ts-cv Leaderboard**
   - ValidationSet 기간: `2023-10-30 ~ 2025-10-20` (총 `24개 Fold`)
   - 정렬 기준: 각 타깃 내 `MAPE` 오름차순
+  - Plot
+    - `ts-cv`는 overlapping fold 예측이므로 동일 날짜 예측값을 평균해 actual과 비교
 
     | Target | Baseline Model | Residual Model | RMSE | MAE | MAPE | NRMSE |
     | --- | --- | --- | --- | --- | --- | --- |
@@ -208,10 +210,14 @@
     | Brent Oil | PatchTST | `XGBoost` | 7.725 | 5.792 | 7.439 | 0.272 |
     | Brent Oil | PatchTST | `LightGBM` | 7.993 | 6.088 | 7.825 | 0.281 |
 
+    ![WTI Oil ts-cv actual vs prediction](output_oil_patchtst_residual_0318/plots/tscv_wti_oil_actual_vs_pred.png)
+
+    ![Brent Oil ts-cv actual vs prediction](output_oil_patchtst_residual_0318/plots/tscv_brent_oil_actual_vs_pred.png)
+
 - **Test Set Metric**
   - TestSet 기간: `2025-10-27 ~ 2026-01-12` (총 `12주`)
   - Plot
-    - 실제값 vs 예측값 비교는 [window_predictions.csv](/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_patchtst_residual_0318/window_predictions.csv) 기준으로 후속 시각화 가능
+    - 실제값 vs 예측값 비교는 [window_predictions.csv](/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_patchtst_residual_0318/window_predictions.csv) 기준으로 생성
 
     | Target | Baseline Model | Residual Model | RMSE | MAE | MAPE | NRMSE |
     | --- | --- | --- | --- | --- | --- | --- |
@@ -223,6 +229,10 @@
     | Brent Oil | PatchTST | `XGBoost` | 1.802 | 1.347 | 2.189 | 0.410 |
     | Brent Oil | PatchTST | `LightGBM` | 3.304 | 2.680 | 4.334 | 0.751 |
     | Brent Oil | PatchTST | `NLinear` | 4.192 | 3.612 | 5.834 | 0.953 |
+
+    ![WTI Oil holdout actual vs prediction](output_oil_patchtst_residual_0318/plots/holdout_wti_oil_actual_vs_pred.png)
+
+    ![Brent Oil holdout actual vs prediction](output_oil_patchtst_residual_0318/plots/holdout_brent_oil_actual_vs_pred.png)
 
 - **핵심 해석**
   - `ts-cv` 기준으로는 `WTI Oil`, `Brent Oil` 모두 `NLinear` residual correction이 가장 우수했다.

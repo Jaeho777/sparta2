@@ -13,6 +13,10 @@ from pathlib import Path
 os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "mplconfig_codex"))
 
 import lightgbm as lgb
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
@@ -141,6 +145,19 @@ def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
         "MAPE": mape(y_true, y_pred),
         "NRMSE": nrmse_range(y_true, y_pred),
     }
+
+
+def slugify(text: str) -> str:
+    return (
+        text.lower()
+        .replace(" ", "_")
+        .replace("/", "_")
+        .replace("-", "_")
+    )
+
+
+def model_label(baseline: str, residual: str) -> str:
+    return baseline if residual == "-" else f"{baseline} + {residual}"
 
 
 def make_direct_windows(series: np.ndarray, input_size: int, horizon: int) -> tuple[np.ndarray, np.ndarray]:
@@ -738,6 +755,107 @@ def aggregate_leaderboard(prediction_df: pd.DataFrame) -> pd.DataFrame:
     return leaderboard.sort_values(["EvalSplit", "Target", "RMSE"]).reset_index(drop=True)
 
 
+def save_prediction_plots(prediction_df: pd.DataFrame, out_dir: Path) -> pd.DataFrame:
+    plot_dir = out_dir / "plots"
+    plot_dir.mkdir(parents=True, exist_ok=True)
+
+    color_map = {
+        "PatchTST": "#7f7f7f",
+        "PatchTST + NLinear": "#d62728",
+        "PatchTST + XGBoost": "#1f77b4",
+        "PatchTST + LightGBM": "#2ca02c",
+    }
+
+    plot_rows: list[dict[str, object]] = []
+    for (eval_split, target), group in prediction_df.groupby(["EvalSplit", "Target"], sort=False):
+        group = group.copy()
+        group["Date"] = pd.to_datetime(group["Date"])
+
+        actual_df = (
+            group.groupby("Date", as_index=False)["Actual"]
+            .mean()
+            .sort_values("Date")
+        )
+
+        fig, ax = plt.subplots(figsize=(13, 5.5))
+        ax.plot(
+            actual_df["Date"],
+            actual_df["Actual"],
+            color="black",
+            linewidth=2.6,
+            label="Actual",
+        )
+
+        label_order = [
+            ("PatchTST", "-"),
+            ("PatchTST", "NLinear"),
+            ("PatchTST", "XGBoost"),
+            ("PatchTST", "LightGBM"),
+        ]
+
+        for baseline, residual in label_order:
+            sub = group[
+                (group["Baseline"] == baseline)
+                & (group["ResidualModel"] == residual)
+            ].copy()
+            if sub.empty:
+                continue
+            pred_df = (
+                sub.groupby("Date", as_index=False)["Prediction"]
+                .mean()
+                .sort_values("Date")
+            )
+            label = model_label(baseline, residual)
+            ax.plot(
+                pred_df["Date"],
+                pred_df["Prediction"],
+                linewidth=2.0,
+                linestyle="--" if residual == "-" else "-",
+                color=color_map.get(label, None),
+                label=label,
+            )
+
+        split_title = "TS-CV Mean Prediction vs Actual" if eval_split == "tscv" else "Final Holdout Prediction vs Actual"
+        ax.set_title(f"{target} | {split_title}")
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Price")
+        ax.grid(True, alpha=0.25)
+        ax.legend(ncol=3, frameon=False)
+        ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+        fig.autofmt_xdate()
+
+        if eval_split == "tscv":
+            ax.text(
+                0.99,
+                0.02,
+                "Note: overlapping fold predictions are averaged by date.",
+                transform=ax.transAxes,
+                ha="right",
+                va="bottom",
+                fontsize=9,
+                color="#555555",
+            )
+
+        plot_path = plot_dir / f"{eval_split}_{slugify(target)}_actual_vs_pred.png"
+        fig.tight_layout()
+        fig.savefig(plot_path, dpi=180, bbox_inches="tight")
+        plt.close(fig)
+
+        plot_rows.append(
+            {
+                "EvalSplit": eval_split,
+                "Target": target,
+                "PlotPath": str(plot_path),
+                "Description": "Actual vs prediction comparison",
+            }
+        )
+
+    plot_manifest = pd.DataFrame(plot_rows)
+    plot_manifest.to_csv(out_dir / "plot_manifest.csv", index=False)
+    return plot_manifest
+
+
 def resolve_target_selection(requested: list[str] | None) -> dict[str, str]:
     if not requested or requested == ["all"]:
         return TARGET_MAP
@@ -857,6 +975,7 @@ def run_experiment(args: argparse.Namespace) -> None:
     leaderboard_df.to_csv(out_dir / "leaderboard_all.csv", index=False)
     leaderboard_df[leaderboard_df["EvalSplit"] == "tscv"].to_csv(out_dir / "leaderboard_tscv.csv", index=False)
     leaderboard_df[leaderboard_df["EvalSplit"] == "holdout"].to_csv(out_dir / "leaderboard_holdout.csv", index=False)
+    plot_manifest = save_prediction_plots(prediction_df=prediction_df, out_dir=out_dir)
 
     metadata = {
         "protocol": asdict(protocol),
@@ -879,7 +998,10 @@ def run_experiment(args: argparse.Namespace) -> None:
     print(f"  - {out_dir / 'leaderboard_holdout.csv'}")
     print(f"  - {out_dir / 'window_metrics.csv'}")
     print(f"  - {out_dir / 'window_predictions.csv'}")
+    print(f"  - {out_dir / 'plot_manifest.csv'}")
     print(f"  - {out_dir / 'run_metadata.json'}")
+    for _, row in plot_manifest.iterrows():
+        print(f"  - {row['PlotPath']}")
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
