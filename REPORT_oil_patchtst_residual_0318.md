@@ -189,6 +189,21 @@
 | Brent Oil | PatchTST | XGBoost | 9.292 | 7.439 | -1.853 |
 | Brent Oil | PatchTST | LightGBM | 9.292 | 7.825 | -1.467 |
 
+- **핵심 Leaderboard**
+  - 발표용 메인 표는 아래 `ts-cv` 기준 leaderboard를 사용하는 것이 가장 적절하다.
+  - 형식은 `Target | Baseline Model | Residual Model | RMSE | MAE | MAPE | NRMSE`로 통일했다.
+
+| Target | Baseline Model | Residual Model | RMSE | MAE | MAPE | NRMSE |
+| --- | --- | --- | --- | --- | --- | --- |
+| WTI Oil | PatchTST | `-` | 10.556 | 8.512 | 11.292 | 0.380 |
+| WTI Oil | PatchTST | `NLinear` | **5.789** | **4.654** | **6.546** | **0.208** |
+| WTI Oil | PatchTST | `LightGBM` | 7.292 | 5.576 | 7.621 | 0.263 |
+| WTI Oil | PatchTST | `XGBoost` | 8.318 | 6.379 | 8.708 | 0.299 |
+| Brent Oil | PatchTST | `-` | 8.874 | 7.210 | 9.292 | 0.312 |
+| Brent Oil | PatchTST | `NLinear` | **5.834** | **4.688** | **6.243** | **0.205** |
+| Brent Oil | PatchTST | `XGBoost` | 7.725 | 5.792 | 7.439 | 0.272 |
+| Brent Oil | PatchTST | `LightGBM` | 7.993 | 6.088 | 7.825 | 0.281 |
+
 ### 04-02. 세부 결과
 
 ---
