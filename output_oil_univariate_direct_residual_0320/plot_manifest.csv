@@ -1,0 +1,5 @@
+EvalSplit,Target,PlotPath
+holdout,Brent Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_univariate_direct_residual_0320/plots/holdout_brent_oil_actual_vs_pred.png
+tscv,Brent Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_univariate_direct_residual_0320/plots/tscv_brent_oil_actual_vs_pred.png
+holdout,WTI Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_univariate_direct_residual_0320/plots/holdout_wti_oil_actual_vs_pred.png
+tscv,WTI Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_univariate_direct_residual_0320/plots/tscv_wti_oil_actual_vs_pred.png
