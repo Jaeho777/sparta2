@@ -186,11 +186,11 @@
 | WTI Oil | Holdout | `Naive(last value)` | **1.648** | **1.279** | **2.212** | **0.016** |
 
 - **Plot**
-  - plot manifest: [plot_manifest.csv](/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_univariate_direct_residual_0320/plot_manifest.csv)
+  - plot manifest: [plot_manifest.csv](output_oil_univariate_direct_residual_0320/plot_manifest.csv)
 
-![WTI Oil TS-CV](/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_univariate_direct_residual_0320/plots/tscv_wti_oil_actual_vs_pred.png)
+![WTI Oil TS-CV](output_oil_univariate_direct_residual_0320/plots/tscv_wti_oil_actual_vs_pred.png)
 
-![Brent Oil Holdout](/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_univariate_direct_residual_0320/plots/holdout_brent_oil_actual_vs_pred.png)
+![Brent Oil Holdout](output_oil_univariate_direct_residual_0320/plots/holdout_brent_oil_actual_vs_pred.png)
 
 # 05. 결론 및 얻게 된 인사이트
 
