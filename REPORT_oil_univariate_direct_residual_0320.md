@@ -132,6 +132,13 @@
   - `최종 holdout 12주`의 learned model 내부 최적 residual은 `WTI=XGBoost`, `Brent=LightGBM`였음
   - 따라서 본 보고서의 메인 표는 `Naive 포함 통합 leaderboard`를 사용하고, `PatchTST vs residual` 비교는 보조 해석으로만 다룸
 
+- **PatchTST 대비 Residual 요약 (TS-CV, MAPE 기준)**
+
+| Target | Bench-mark (PatchTST, %) | 실험모델 (Best Residual, %) | 증감 (%) |
+| --- | --- | --- | --- |
+| WTI Oil | 11.164 | 7.676 (`NLinear`) | -3.488 |
+| Brent Oil | 9.097 | 8.193 (`NLinear`) | -0.903 |
+
 - **핵심 Leaderboard (TS-CV, date-averaged)**
   - 기준 파일: [leaderboard_tscv_with_naive.csv](output_oil_univariate_direct_residual_0320/leaderboard_tscv_with_naive.csv)
 
