@@ -28,7 +28,6 @@
     "weight_decay": 1e-05
   },
   "nlinear_cfg": {
-    "hidden_size": 128,
     "max_steps": 300,
     "learning_rate": 0.001,
     "batch_size": 16,
@@ -75,8 +74,8 @@
         "val_samples": 98
       },
       "NLinear": {
-        "best_val_mse": 108.62615203857422,
-        "steps": 54,
+        "best_val_mse": 320.2870788574219,
+        "steps": 32,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -268,8 +267,8 @@
         "val_samples": 99
       },
       "NLinear": {
-        "best_val_mse": 147.3369140625,
-        "steps": 54,
+        "best_val_mse": 395.5907897949219,
+        "steps": 27,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -461,8 +460,8 @@
         "val_samples": 100
       },
       "NLinear": {
-        "best_val_mse": 166.02406311035156,
-        "steps": 49,
+        "best_val_mse": 432.0018005371094,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -654,8 +653,8 @@
         "val_samples": 101
       },
       "NLinear": {
-        "best_val_mse": 161.40098571777344,
-        "steps": 52,
+        "best_val_mse": 284.5946350097656,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -847,8 +846,8 @@
         "val_samples": 101
       },
       "NLinear": {
-        "best_val_mse": 119.05472564697266,
-        "steps": 68,
+        "best_val_mse": 188.497802734375,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -1040,8 +1039,8 @@
         "val_samples": 102
       },
       "NLinear": {
-        "best_val_mse": 60.249420166015625,
-        "steps": 241,
+        "best_val_mse": 162.36878967285156,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -1233,8 +1232,8 @@
         "val_samples": 103
       },
       "NLinear": {
-        "best_val_mse": 40.058834075927734,
-        "steps": 210,
+        "best_val_mse": 184.3760223388672,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -1426,8 +1425,8 @@
         "val_samples": 104
       },
       "NLinear": {
-        "best_val_mse": 65.86559295654297,
-        "steps": 182,
+        "best_val_mse": 264.5945739746094,
+        "steps": 33,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -1619,8 +1618,8 @@
         "val_samples": 105
       },
       "NLinear": {
-        "best_val_mse": 92.23273468017578,
-        "steps": 237,
+        "best_val_mse": 331.835693359375,
+        "steps": 25,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -1812,8 +1811,8 @@
         "val_samples": 105
       },
       "NLinear": {
-        "best_val_mse": 91.01543426513672,
-        "steps": 158,
+        "best_val_mse": 346.5068359375,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -2005,8 +2004,8 @@
         "val_samples": 106
       },
       "NLinear": {
-        "best_val_mse": 72.74693298339844,
-        "steps": 191,
+        "best_val_mse": 318.5417785644531,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -2198,8 +2197,8 @@
         "val_samples": 107
       },
       "NLinear": {
-        "best_val_mse": 47.44087219238281,
-        "steps": 115,
+        "best_val_mse": 272.07611083984375,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -2391,8 +2390,8 @@
         "val_samples": 108
       },
       "NLinear": {
-        "best_val_mse": 53.10850143432617,
-        "steps": 79,
+        "best_val_mse": 217.7703094482422,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -2584,8 +2583,8 @@
         "val_samples": 109
       },
       "NLinear": {
-        "best_val_mse": 44.1383056640625,
-        "steps": 59,
+        "best_val_mse": 170.63780212402344,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -2777,8 +2776,8 @@
         "val_samples": 109
       },
       "NLinear": {
-        "best_val_mse": 27.27350616455078,
-        "steps": 56,
+        "best_val_mse": 105.26397705078125,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -2970,8 +2969,8 @@
         "val_samples": 110
       },
       "NLinear": {
-        "best_val_mse": 16.5831241607666,
-        "steps": 45,
+        "best_val_mse": 49.64118576049805,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -3163,8 +3162,8 @@
         "val_samples": 111
       },
       "NLinear": {
-        "best_val_mse": 9.519391059875488,
-        "steps": 49,
+        "best_val_mse": 70.01995086669922,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -3356,8 +3355,8 @@
         "val_samples": 112
       },
       "NLinear": {
-        "best_val_mse": 14.244854927062988,
-        "steps": 41,
+        "best_val_mse": 47.71284103393555,
+        "steps": 26,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -3549,8 +3548,8 @@
         "val_samples": 113
       },
       "NLinear": {
-        "best_val_mse": 12.204570770263672,
-        "steps": 44,
+        "best_val_mse": 39.60935592651367,
+        "steps": 37,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -3742,8 +3741,8 @@
         "val_samples": 113
       },
       "NLinear": {
-        "best_val_mse": 11.566997528076172,
-        "steps": 49,
+        "best_val_mse": 54.87758255004883,
+        "steps": 35,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -3935,8 +3934,8 @@
         "val_samples": 114
       },
       "NLinear": {
-        "best_val_mse": 22.463417053222656,
-        "steps": 38,
+        "best_val_mse": 28.5791015625,
+        "steps": 39,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -4128,8 +4127,8 @@
         "val_samples": 115
       },
       "NLinear": {
-        "best_val_mse": 33.7873649597168,
-        "steps": 34,
+        "best_val_mse": 50.51833724975586,
+        "steps": 64,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -4321,8 +4320,8 @@
         "val_samples": 116
       },
       "NLinear": {
-        "best_val_mse": 25.985300064086914,
-        "steps": 21,
+        "best_val_mse": 22.733963012695312,
+        "steps": 60,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -4514,8 +4513,8 @@
         "val_samples": 117
       },
       "NLinear": {
-        "best_val_mse": 37.788673400878906,
-        "steps": 21,
+        "best_val_mse": 54.58426284790039,
+        "steps": 43,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -4707,8 +4706,8 @@
         "val_samples": 119
       },
       "NLinear": {
-        "best_val_mse": 17.231908798217773,
-        "steps": 21,
+        "best_val_mse": 22.54233741760254,
+        "steps": 54,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -4900,8 +4899,8 @@
         "val_samples": 98
       },
       "NLinear": {
-        "best_val_mse": 76.73023223876953,
-        "steps": 54,
+        "best_val_mse": 271.5661315917969,
+        "steps": 22,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -5093,8 +5092,8 @@
         "val_samples": 99
       },
       "NLinear": {
-        "best_val_mse": 96.03974151611328,
-        "steps": 52,
+        "best_val_mse": 332.0424499511719,
+        "steps": 30,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -5286,8 +5285,8 @@
         "val_samples": 100
       },
       "NLinear": {
-        "best_val_mse": 102.05196380615234,
-        "steps": 50,
+        "best_val_mse": 312.48944091796875,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -5479,8 +5478,8 @@
         "val_samples": 101
       },
       "NLinear": {
-        "best_val_mse": 65.62337493896484,
-        "steps": 53,
+        "best_val_mse": 177.19091796875,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -5672,8 +5671,8 @@
         "val_samples": 101
       },
       "NLinear": {
-        "best_val_mse": 51.62220764160156,
-        "steps": 47,
+        "best_val_mse": 126.89446258544922,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -5865,8 +5864,8 @@
         "val_samples": 102
       },
       "NLinear": {
-        "best_val_mse": 29.1693115234375,
-        "steps": 151,
+        "best_val_mse": 72.8392562866211,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -6058,8 +6057,8 @@
         "val_samples": 103
       },
       "NLinear": {
-        "best_val_mse": 39.3060302734375,
-        "steps": 177,
+        "best_val_mse": 140.0411834716797,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -6251,8 +6250,8 @@
         "val_samples": 104
       },
       "NLinear": {
-        "best_val_mse": 65.89134979248047,
-        "steps": 247,
+        "best_val_mse": 221.0073699951172,
+        "steps": 33,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -6444,8 +6443,8 @@
         "val_samples": 105
       },
       "NLinear": {
-        "best_val_mse": 69.43733215332031,
-        "steps": 224,
+        "best_val_mse": 222.561279296875,
+        "steps": 23,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -6637,8 +6636,8 @@
         "val_samples": 105
       },
       "NLinear": {
-        "best_val_mse": 57.36091995239258,
-        "steps": 119,
+        "best_val_mse": 230.4879913330078,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -6830,8 +6829,8 @@
         "val_samples": 106
       },
       "NLinear": {
-        "best_val_mse": 55.64509201049805,
-        "steps": 83,
+        "best_val_mse": 164.5267791748047,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -7023,8 +7022,8 @@
         "val_samples": 107
       },
       "NLinear": {
-        "best_val_mse": 35.831790924072266,
-        "steps": 144,
+        "best_val_mse": 192.5023651123047,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -7216,8 +7215,8 @@
         "val_samples": 108
       },
       "NLinear": {
-        "best_val_mse": 53.21354293823242,
-        "steps": 70,
+        "best_val_mse": 184.5267333984375,
+        "steps": 23,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -7409,8 +7408,8 @@
         "val_samples": 109
       },
       "NLinear": {
-        "best_val_mse": 23.65569305419922,
-        "steps": 59,
+        "best_val_mse": 109.67296600341797,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -7602,8 +7601,8 @@
         "val_samples": 109
       },
       "NLinear": {
-        "best_val_mse": 21.875625610351562,
-        "steps": 50,
+        "best_val_mse": 53.12196350097656,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -7795,8 +7794,8 @@
         "val_samples": 110
       },
       "NLinear": {
-        "best_val_mse": 15.904655456542969,
-        "steps": 40,
+        "best_val_mse": 33.52345275878906,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -7988,8 +7987,8 @@
         "val_samples": 111
       },
       "NLinear": {
-        "best_val_mse": 13.840789794921875,
-        "steps": 36,
+        "best_val_mse": 39.64238357543945,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -8181,8 +8180,8 @@
         "val_samples": 112
       },
       "NLinear": {
-        "best_val_mse": 11.664649963378906,
-        "steps": 45,
+        "best_val_mse": 35.23033905029297,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -8374,8 +8373,8 @@
         "val_samples": 113
       },
       "NLinear": {
-        "best_val_mse": 12.016573905944824,
-        "steps": 39,
+        "best_val_mse": 45.916839599609375,
+        "steps": 21,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -8567,8 +8566,8 @@
         "val_samples": 113
       },
       "NLinear": {
-        "best_val_mse": 13.390936851501465,
-        "steps": 42,
+        "best_val_mse": 41.73377227783203,
+        "steps": 33,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -8760,8 +8759,8 @@
         "val_samples": 114
       },
       "NLinear": {
-        "best_val_mse": 22.11509132385254,
-        "steps": 33,
+        "best_val_mse": 37.257904052734375,
+        "steps": 43,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -8953,8 +8952,8 @@
         "val_samples": 115
       },
       "NLinear": {
-        "best_val_mse": 16.510412216186523,
-        "steps": 21,
+        "best_val_mse": 21.548498153686523,
+        "steps": 82,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -9146,8 +9145,8 @@
         "val_samples": 116
       },
       "NLinear": {
-        "best_val_mse": 37.12924575805664,
-        "steps": 21,
+        "best_val_mse": 25.01625633239746,
+        "steps": 67,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -9339,8 +9338,8 @@
         "val_samples": 117
       },
       "NLinear": {
-        "best_val_mse": 33.82429504394531,
-        "steps": 21,
+        "best_val_mse": 37.13246154785156,
+        "steps": 158,
         "train_samples": 12,
         "val_samples": 4
       },
@@ -9532,8 +9531,8 @@
         "val_samples": 119
       },
       "NLinear": {
-        "best_val_mse": 20.818758010864258,
-        "steps": 23,
+        "best_val_mse": 16.353675842285156,
+        "steps": 113,
         "train_samples": 12,
         "val_samples": 4
       },

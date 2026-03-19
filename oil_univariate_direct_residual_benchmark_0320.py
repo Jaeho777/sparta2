@@ -71,7 +71,6 @@ class PatchTSTConfig:
 
 @dataclass(frozen=True)
 class NLinearConfig:
-    hidden_size: int = 128
     max_steps: int = 300
     learning_rate: float = 1e-3
     batch_size: int = 16
@@ -178,17 +177,16 @@ class PatchTSTDirect(nn.Module):
 
 
 class NLinearDirect(nn.Module):
-    def __init__(self, input_size: int, horizon: int, hidden_size: int):
+    def __init__(self, input_size: int, horizon: int):
         super().__init__()
-        self.in_proj = nn.Linear(input_size, hidden_size)
-        self.dropout = nn.Dropout(0.2)
-        self.out_proj = nn.Linear(hidden_size, horizon)
+        # Residual correction uses a linear direct head; the core NLinear idea
+        # kept here is last-value normalization on the input sequence.
+        self.linear = nn.Linear(input_size, horizon)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = x.squeeze(-1)
-        x_norm = x - x.mean(dim=1, keepdim=True)
-        hidden = torch.relu(self.in_proj(x_norm))
-        return self.out_proj(self.dropout(hidden))
+        x_norm = x - x[:, -1:].detach()
+        return self.linear(x_norm)
 
 
 def set_seed(seed: int) -> None:
@@ -393,7 +391,7 @@ def fit_nlinear_direct(
     config: NLinearConfig,
     device: torch.device,
 ) -> tuple[NLinearDirect, dict[str, float | int]]:
-    model = NLinearDirect(input_size=input_size, horizon=horizon, hidden_size=config.hidden_size)
+    model = NLinearDirect(input_size=input_size, horizon=horizon)
     model, fit_info = fit_torch_model(
         model=model,
         x=x_train,
@@ -823,6 +821,44 @@ def save_prediction_plots(dateavg_df: pd.DataFrame, out_dir: Path) -> pd.DataFra
     return pd.DataFrame(plot_rows)
 
 
+def build_naive_prediction_rows(
+    df: pd.DataFrame,
+    windows: list[EvalWindow],
+    protocol: ProtocolConfig,
+    targets: list[str],
+) -> pd.DataFrame:
+    rows: list[dict[str, object]] = []
+    for target_name in targets:
+        target_col = TARGET_MAP[target_name]
+        y_all = df[target_col].to_numpy(dtype=np.float32)
+        for window in windows:
+            train_end = window.train_end
+            test_start = window.test_start
+            test_end = window.test_end
+            last_value = float(y_all[train_end - 1])
+            actual = y_all[test_start:test_end]
+            test_dates = df.index[test_start:test_end]
+            pred = np.full(protocol.horizon, last_value, dtype=np.float32)
+            for step_idx, dt in enumerate(test_dates):
+                rows.append(
+                    {
+                        "Target": target_name,
+                        "TargetColumn": target_col,
+                        "EvalSplit": window.split,
+                        "WindowId": window.window_id,
+                        "Date": str(dt.date()),
+                        "RawPosition": int(test_start + step_idx),
+                        "HorizonStep": int(step_idx + 1),
+                        "Baseline": "Naive",
+                        "ResidualModel": "-",
+                        "Actual": float(actual[step_idx]),
+                        "Prediction": float(pred[step_idx]),
+                        "Error": float(actual[step_idx] - pred[step_idx]),
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Strict univariate horizon-12 PatchTST residual benchmark.")
     parser.add_argument("--data_path", type=Path, default=Path("data_weekly_260120.csv"))
@@ -900,6 +936,19 @@ def main() -> None:
     prediction_df = pd.DataFrame(prediction_rows)
     dateavg_df = aggregate_predictions_dateavg(prediction_df)
     leaderboard_df = aggregate_leaderboard(dateavg_df, target_ranges=target_ranges)
+    naive_prediction_df = build_naive_prediction_rows(
+        df=df,
+        windows=windows,
+        protocol=protocol,
+        targets=args.targets,
+    )
+    naive_dateavg_df = aggregate_predictions_dateavg(naive_prediction_df)
+    naive_leaderboard_df = aggregate_leaderboard(naive_dateavg_df, target_ranges=target_ranges)
+    leaderboard_with_naive_df = (
+        pd.concat([naive_leaderboard_df, leaderboard_df], ignore_index=True)
+        .sort_values(["EvalSplit", "Target", "RMSE"])
+        .reset_index(drop=True)
+    )
     plot_manifest = save_prediction_plots(dateavg_df, args.output_dir)
 
     metric_df.to_csv(args.output_dir / "window_metrics.csv", index=False)
@@ -908,6 +957,15 @@ def main() -> None:
     leaderboard_df.to_csv(args.output_dir / "leaderboard_all.csv", index=False)
     leaderboard_df[leaderboard_df["EvalSplit"] == "tscv"].to_csv(args.output_dir / "leaderboard_tscv.csv", index=False)
     leaderboard_df[leaderboard_df["EvalSplit"] == "holdout"].to_csv(args.output_dir / "leaderboard_holdout.csv", index=False)
+    naive_leaderboard_df.to_csv(args.output_dir / "naive_reference.csv", index=False)
+    leaderboard_with_naive_df[leaderboard_with_naive_df["EvalSplit"] == "tscv"].to_csv(
+        args.output_dir / "leaderboard_tscv_with_naive.csv",
+        index=False,
+    )
+    leaderboard_with_naive_df[leaderboard_with_naive_df["EvalSplit"] == "holdout"].to_csv(
+        args.output_dir / "leaderboard_holdout_with_naive.csv",
+        index=False,
+    )
     plot_manifest.to_csv(args.output_dir / "plot_manifest.csv", index=False)
 
     metadata = {
