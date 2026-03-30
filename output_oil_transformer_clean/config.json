@@ -1,0 +1,147 @@
+{
+  "target": "Com_BrentCrudeOil",
+  "train_size": 644,
+  "val_size": 12,
+  "test_size": 12,
+  "feature_selection": {
+    "method": "train-only SHAP + TimeSeriesCV",
+    "selected_count": 10,
+    "selected_features": [
+      "Spread_Crack",
+      "EX_USD_KRW",
+      "Com_Gasoline",
+      "Ratio_Gold_Oil",
+      "Com_Coal",
+      "Com_Gasoline_ma12r",
+      "Com_PalmOil",
+      "Idx_SnPVIX",
+      "Bonds_US_10Y",
+      "Bonds_US_3M_ret"
+    ],
+    "total_features": 55
+  },
+  "experiments": [
+    [
+      "NLinear",
+      "NLinear"
+    ],
+    [
+      "NLinear",
+      "PatchTST"
+    ],
+    [
+      "NLinear",
+      "iTransformer"
+    ],
+    [
+      "NLinear",
+      "Transformer"
+    ],
+    [
+      "NLinear",
+      "LSTM"
+    ],
+    [
+      "PatchTST",
+      "NLinear"
+    ],
+    [
+      "PatchTST",
+      "PatchTST"
+    ],
+    [
+      "PatchTST",
+      "iTransformer"
+    ],
+    [
+      "PatchTST",
+      "Transformer"
+    ],
+    [
+      "PatchTST",
+      "LSTM"
+    ],
+    [
+      "iTransformer",
+      "NLinear"
+    ],
+    [
+      "iTransformer",
+      "PatchTST"
+    ],
+    [
+      "iTransformer",
+      "iTransformer"
+    ],
+    [
+      "iTransformer",
+      "Transformer"
+    ],
+    [
+      "iTransformer",
+      "LSTM"
+    ],
+    [
+      "Transformer",
+      "NLinear"
+    ],
+    [
+      "Transformer",
+      "PatchTST"
+    ],
+    [
+      "Transformer",
+      "iTransformer"
+    ],
+    [
+      "Transformer",
+      "Transformer"
+    ],
+    [
+      "Transformer",
+      "LSTM"
+    ],
+    [
+      "LSTM",
+      "NLinear"
+    ],
+    [
+      "LSTM",
+      "PatchTST"
+    ],
+    [
+      "LSTM",
+      "iTransformer"
+    ],
+    [
+      "LSTM",
+      "Transformer"
+    ],
+    [
+      "LSTM",
+      "LSTM"
+    ]
+  ],
+  "screening": {
+    "pairs_tested": 25,
+    "stage_seeds": 1,
+    "epochs": 60,
+    "patience": 12
+  },
+  "confirmatory": {
+    "topk_from_screening": 8,
+    "stage_seeds": 3,
+    "epochs": 120,
+    "patience": 20
+  },
+  "top3_selection_rule": "Lowest confirmatory S2 validation RMSE after 25-pair screening",
+  "ror_strategies": {
+    "A": "Weighted LightGBM",
+    "B": "Ridge",
+    "C": "ElasticNet",
+    "D": "OOF LightGBM",
+    "E": "Augmented LightGBM",
+    "F": "Ensemble Ridge+LightGBM",
+    "G": "All-feature LightGBM"
+  }
+}

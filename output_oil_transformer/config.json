@@ -1,0 +1,21 @@
+{
+  "target": "Com_BrentCrudeOil",
+  "n_experiments": 10,
+  "feature_selection": {
+    "method": "SHAP+TimeSeriesCV",
+    "selected": 10,
+    "total": 55
+  },
+  "models": [
+    "NLinear",
+    "PatchTST",
+    "iTransformer",
+    "Transformer",
+    "LSTM"
+  ],
+  "seq_len": 24,
+  "n_seeds": 3,
+  "best": "Exp9: PatchTST+iTransformer+LGBM",
+  "best_rmse": 1.2383798322822839,
+  "rw_rmse": 1.1227449561973846
+}

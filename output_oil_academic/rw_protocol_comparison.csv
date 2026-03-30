@@ -1,0 +1,3 @@
+Benchmark,Val_RMSE,Test_RMSE
+"Random Walk (fixed-origin, official)",4.955101954358962,1.8184309002768435
+"Random Walk (walk-forward, diagnostic)",1.8242538671734283,1.1227449561973846

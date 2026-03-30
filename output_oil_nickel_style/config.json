@@ -1,0 +1,13 @@
+{
+  "target": "Com_BrentCrudeOil",
+  "split": {
+    "train_end": "2025-07-28",
+    "val_start": "2025-08-04",
+    "val_end": "2025-10-20",
+    "test_start": "2025-10-27",
+    "test_end": "2026-01-12"
+  },
+  "n_features": 73,
+  "best_weight_by_validation": 0.7,
+  "best_validation_rmse": 2.301291231720948
+}

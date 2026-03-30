@@ -1,0 +1,53 @@
+{
+  "protocol": {
+    "description": "Repeated train/validation/test block evaluation with 12-week validation and 12-week test windows.",
+    "test_starts": [
+      "2024-11-25",
+      "2025-02-17",
+      "2025-05-12",
+      "2025-08-04",
+      "2025-10-27"
+    ],
+    "window_length_weeks": 12
+  },
+  "baseline": {
+    "weight_rule": "Select hybrid weight on validation from {0.70, 0.80, 0.90}",
+    "gb_params": {
+      "n_estimators": 500,
+      "learning_rate": 0.05,
+      "max_depth": 3
+    }
+  },
+  "transformer": {
+    "pairs": [
+      "PatchTST+Transformer",
+      "PatchTST+Transformer+ElasticNetRoR",
+      "PatchTST+iTransformer"
+    ],
+    "reestimate": {
+      "seeds": 2,
+      "epochs": 80,
+      "patience": 15
+    },
+    "ror": {
+      "alpha": 0.01,
+      "l1_ratio": 0.1,
+      "lambda": 0.5,
+      "gate": "Apply lambda only when validation RMSE improves over stage 2"
+    }
+  },
+  "stl": {
+    "baseline": "ExponentialSmoothing one-step expanding refit",
+    "nlinear": {
+      "seq_len": 24,
+      "seeds": 3,
+      "topk": 2,
+      "epochs": 160,
+      "patience": 25
+    },
+    "ror": {
+      "model": "LightGBM",
+      "gate": "Apply stage 3 only when validation RMSE improves over stage 2"
+    }
+  }
+}

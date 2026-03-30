@@ -1,0 +1,35 @@
+{
+  "target": "Com_BrentCrudeOil",
+  "n_experiments": 5,
+  "feature_selection": {
+    "method": "SHAP+TimeSeriesCV",
+    "selected": 10,
+    "total": 55
+  },
+  "models": [
+    "NLinear",
+    "PatchTST",
+    "iTransformer",
+    "Transformer",
+    "LSTM"
+  ],
+  "seq_len": 24,
+  "n_seeds": 5,
+  "ror_strategies": [
+    "A:WeightedLGBM",
+    "B:Ridge",
+    "C:ElasticNet",
+    "D:OOF_LGBM",
+    "E:AugmentedLGBM",
+    "F:Ensemble",
+    "G:RW_Blend",
+    "H:AllFeatureLGBM"
+  ],
+  "best": "Exp2: LSTM+LSTM",
+  "best_rmse": 1.0326358823481487,
+  "best_ror_strategy": "Strategy_G",
+  "best_ror_desc": "RW_Blend(w=0.50)",
+  "ror_improved": true,
+  "n_ror_improved": 5,
+  "rw_rmse": 1.1227449561973846
+}

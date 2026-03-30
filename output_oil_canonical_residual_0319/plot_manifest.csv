@@ -1,0 +1,9 @@
+Setting,EvalSplit,Target,PlotPath,Description
+Multivariate+Exogenous,holdout,Brent Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_canonical_residual_0319/plots/multivariate_plus_exogenous_holdout_brent_oil_actual_vs_pred.png,Actual vs prediction comparison
+Multivariate+Exogenous,tscv,Brent Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_canonical_residual_0319/plots/multivariate_plus_exogenous_tscv_brent_oil_actual_vs_pred.png,Actual vs prediction comparison
+Multivariate+Exogenous,holdout,WTI Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_canonical_residual_0319/plots/multivariate_plus_exogenous_holdout_wti_oil_actual_vs_pred.png,Actual vs prediction comparison
+Multivariate+Exogenous,tscv,WTI Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_canonical_residual_0319/plots/multivariate_plus_exogenous_tscv_wti_oil_actual_vs_pred.png,Actual vs prediction comparison
+Univariate,holdout,Brent Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_canonical_residual_0319/plots/univariate_holdout_brent_oil_actual_vs_pred.png,Actual vs prediction comparison
+Univariate,tscv,Brent Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_canonical_residual_0319/plots/univariate_tscv_brent_oil_actual_vs_pred.png,Actual vs prediction comparison
+Univariate,holdout,WTI Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_canonical_residual_0319/plots/univariate_holdout_wti_oil_actual_vs_pred.png,Actual vs prediction comparison
+Univariate,tscv,WTI Oil,/Users/jaeholee/Desktop/T-LAB/sparta_2/sparta2/output_oil_canonical_residual_0319/plots/univariate_tscv_wti_oil_actual_vs_pred.png,Actual vs prediction comparison
